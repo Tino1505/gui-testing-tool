@@ -1,32 +1,51 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import Select
 import time
 
 from engine.excel_reader import read_test_data
 from engine.browser import BrowserManager
 from engine.screenshot import capture_screenshot
-from engine.report import generate_report, generate_excel_report
+from engine.report import generate_report, update_input_excel_with_results
 
-def get_locator_tuple(locator_str):
-    if locator_str.startswith('/') or locator_str.startswith('//'):
-        return (By.XPATH, locator_str)
+def get_locator_tuple(locator_type, locator_str):
+    if locator_type:
+        locator_type = str(locator_type).lower().strip()
     else:
+        locator_type = ""
+        
+    if locator_type == 'id':
+        return (By.ID, locator_str)
+    elif locator_type == 'css':
         return (By.CSS_SELECTOR, locator_str)
+    elif locator_type == 'xpath':
+        return (By.XPATH, locator_str)
+    elif locator_type == 'name':
+        return (By.NAME, locator_str)
+    elif locator_type == 'class':
+        return (By.CLASS_NAME, locator_str)
+    elif locator_type == 'tag':
+        return (By.TAG_NAME, locator_str)
+    else:
+        if locator_str.startswith('/') or locator_str.startswith('//'):
+            return (By.XPATH, locator_str)
+        else:
+            return (By.CSS_SELECTOR, locator_str)
 
 def resolve_data(data_val, test_data_dict):
     """
     Resolve data_val using TEST_DATA sheet. If not found, use data_val directly.
     """
-    if not data_val:
+    if not data_val or data_val == "-":
         return ""
     # If it's a key in TEST_DATA, return the value, otherwise return the string itself
     return test_data_dict.get(data_val, data_val)
 
 def execute_step(driver, step, test_data_dict, elements_dict, pages_dict):
-    action = str(step.get("action")).lower().strip()
-    target_id = step.get("target")
-    data_key = step.get("data")
+    action = str(step.get("Action", step.get("action", ""))).lower().strip()
+    target_id = step.get("TargetElement", step.get("target"))
+    data_key = step.get("TestDataKey", step.get("data"))
     
     actual_data = resolve_data(data_key, test_data_dict)
     
@@ -36,7 +55,7 @@ def execute_step(driver, step, test_data_dict, elements_dict, pages_dict):
         # target_id is a page_id here
         page = pages_dict.get(target_id)
         if not page:
-            raise Exception(f"Page ID '{target_id}' not found in PAGES sheet.")
+            raise Exception(f"Page ID '{target_id}' not found in OBJECT_REPOSITORY as url.")
         url = page.get("url")
         if not url:
              # Try dynamic navigation or just stay if URL is empty (like for product detail)
@@ -46,14 +65,35 @@ def execute_step(driver, step, test_data_dict, elements_dict, pages_dict):
              time.sleep(2) # Basic wait
              message = f"Navigated to {url}"
              
+    elif action == "wait":
+        if target_id and target_id != "-":
+            element_info = elements_dict.get(target_id)
+            if element_info:
+                locator_str = element_info.get("locator")
+                locator_type = element_info.get("locator_type")
+                by_type, by_val = get_locator_tuple(locator_type, locator_str)
+                wait = WebDriverWait(driver, 10)
+                try:
+                    wait.until(EC.presence_of_element_located((by_type, by_val)))
+                    message = f"Waited for element {target_id}"
+                except:
+                    message = f"Wait timeout for element {target_id}"
+            else:
+                time.sleep(3)
+                message = f"Waited for 3 seconds"
+        else:
+            time.sleep(3)
+            message = f"Waited for 3 seconds"
+             
     else:
         # All other actions need an element
         element_info = elements_dict.get(target_id)
         if not element_info:
-            raise Exception(f"Element ID '{target_id}' not found in ELEMENTS sheet.")
+            raise Exception(f"Element ID '{target_id}' not found in OBJECT_REPOSITORY.")
             
         locator_str = element_info.get("locator")
-        by_type, by_val = get_locator_tuple(locator_str)
+        locator_type = element_info.get("locator_type")
+        by_type, by_val = get_locator_tuple(locator_type, locator_str)
         
         # Wait for element
         wait = WebDriverWait(driver, 10)
@@ -79,7 +119,7 @@ def execute_step(driver, step, test_data_dict, elements_dict, pages_dict):
             else:
                 raise Exception(f"No elements found for {target_id}")
                 
-        elif action in ["verify_text", "check"]:
+        elif action in ["verify", "verify_text", "check"]:
             el = wait.until(EC.presence_of_element_located((by_type, by_val)))
             actual_text = el.text.strip()
             if not actual_text:
@@ -96,6 +136,12 @@ def execute_step(driver, step, test_data_dict, elements_dict, pages_dict):
                 message = f"Verified {target_id} is visible"
             else:
                 raise Exception(f"{target_id} is not visible")
+                
+        elif action == "select":
+            el = wait.until(EC.presence_of_element_located((by_type, by_val)))
+            select = Select(el)
+            select.select_by_visible_text(str(actual_data))
+            message = f"Selected '{actual_data}' from {target_id}"
                 
         else:
             raise Exception(f"Unknown action: '{action}'")
@@ -121,7 +167,7 @@ def run_tests(excel_path):
     try:
         for tc in test_cases:
             tc_id = tc["tc_id"]
-            if not tc["run"]:
+            if not tc.get("run", True):
                 print(f"Skipping {tc_id} (run != Y)")
                 continue
                 
@@ -135,16 +181,21 @@ def run_tests(excel_path):
                 "screenshot": None
             }
             
+            tc_start_time = time.time()
+            
             for step in tc["steps"]:
-                step_no = step.get("step")
-                action = step.get("action")
-                print(f"  Step {step_no}: {action} {step.get('target')} {step.get('data')}")
+                step_start_time = time.time()
+                step_no = step.get("StepNo", step.get("step"))
+                action = step.get("Action", step.get("action"))
+                target = step.get("TargetElement", step.get("target"))
+                data_key = step.get("TestDataKey", step.get("data"))
+                print(f"  Step {step_no}: {action} {target} {data_key}")
                 
                 step_result = {
                     "step": step_no,
                     "action": action,
-                    "target": step.get("target"),
-                    "data": step.get("data"),
+                    "target": target,
+                    "data": data_key,
                     "passed": False,
                     "message": ""
                 }
@@ -158,10 +209,16 @@ def run_tests(excel_path):
                     step_result["message"] = f"Error: {str(e)}"
                     tc_result["passed"] = False
                     
+                step_end_time = time.time()
+                step_result["duration"] = f"{(step_end_time - step_start_time):.2f}s"
+                
                 tc_result["steps"].append(step_result)
                 
                 if not step_result["passed"]:
                     break # Stop executing further steps if one fails
+            
+            tc_end_time = time.time()
+            tc_result["duration"] = f"{(tc_end_time - tc_start_time):.2f}s"
             
             # Take screenshot at the end of the test case (or when it fails)
             screenshot_path = capture_screenshot(driver, tc_id, screenshots_dir)
@@ -176,6 +233,5 @@ def run_tests(excel_path):
     print("Generating reports...")
     html_report_path = generate_report(results, reports_dir)
     print(f"HTML Report saved to {html_report_path}")
-    excel_report_path = generate_excel_report(results, reports_dir)
-    print(f"Excel Report saved to {excel_report_path}")
+    update_input_excel_with_results(excel_path, results)
     print("Done!")
