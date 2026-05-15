@@ -155,62 +155,78 @@ def generate_report(results, report_dir="reports"):
         
     return report_path
 
-def generate_excel_report(results, report_dir="reports"):
+def update_input_excel_with_results(excel_path, results):
     import openpyxl
-    from openpyxl.styles import PatternFill, Font, Alignment
-    from openpyxl.drawing.image import Image
-
-    if not os.path.exists(report_dir):
-        os.makedirs(report_dir)
-
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = "Test Results"
-
-    # Define headers
-    headers = ["TC ID", "Summary", "Status", "Screenshot"]
-    for col_num, header_title in enumerate(headers, 1):
-        cell = ws.cell(row=1, column=col_num, value=header_title)
-        cell.font = Font(bold=True)
-        cell.fill = PatternFill(start_color="DDDDDD", end_color="DDDDDD", fill_type="solid")
-        cell.alignment = Alignment(horizontal="center", vertical="center")
-
-    # Set column widths
-    ws.column_dimensions['A'].width = 15
-    ws.column_dimensions['B'].width = 50
-    ws.column_dimensions['C'].width = 15
-    ws.column_dimensions['D'].width = 40
-
-    row_num = 2
-    for tc in results:
-        ws.cell(row=row_num, column=1, value=tc["tc_id"]).alignment = Alignment(vertical="center")
-        ws.cell(row=row_num, column=2, value=tc["summary"]).alignment = Alignment(vertical="center", wrap_text=True)
+    try:
+        wb = openpyxl.load_workbook(excel_path)
         
-        status_cell = ws.cell(row=row_num, column=3, value="PASS" if tc["passed"] else "FAIL")
-        status_cell.alignment = Alignment(horizontal="center", vertical="center")
-        if tc["passed"]:
-            status_cell.font = Font(color="008000", bold=True)
-        else:
-            status_cell.font = Font(color="FF0000", bold=True)
-
-        screenshot_path = tc.get("screenshot")
-        if screenshot_path and os.path.exists(screenshot_path):
-            try:
-                img = Image(screenshot_path)
-                # Resize image to fit nicely
-                img.width = 250
-                img.height = 150
-                ws.add_image(img, f"D{row_num}")
-                ws.row_dimensions[row_num].height = 120
-            except Exception as e:
-                ws.cell(row=row_num, column=4, value=f"Error loading image: {e}")
-
-        row_num += 1
-
-    from datetime import datetime, timezone, timedelta
-    vn_tz = timezone(timedelta(hours=7))
-    timestamp_str = datetime.now(vn_tz).strftime("%Y%m%d_%H%M%S")
-
-    report_path = os.path.join(report_dir, f"Report_{timestamp_str}.xlsx")
-    wb.save(report_path)
-    return report_path
+        # Create dictionaries for fast lookup
+        tc_dict = {tc["tc_id"]: tc for tc in results}
+        
+        # 1. Update TEST_CASES
+        if "TEST_CASES" in wb.sheetnames:
+            ws_tc = wb["TEST_CASES"]
+            # Find or create columns for Status and Duration
+            headers = [cell.value for cell in ws_tc[1]]
+            
+            if "Status" not in headers:
+                ws_tc.cell(row=1, column=len(headers) + 1, value="Status")
+                headers.append("Status")
+            if "Duration" not in headers:
+                ws_tc.cell(row=1, column=len(headers) + 1, value="Duration")
+                headers.append("Duration")
+                
+            status_col = headers.index("Status") + 1
+            duration_col = headers.index("Duration") + 1
+            
+            tc_id_col = headers.index("TestCaseID") + 1 if "TestCaseID" in headers else 1
+            
+            for row in range(2, ws_tc.max_row + 1):
+                tc_id = ws_tc.cell(row=row, column=tc_id_col).value
+                if tc_id and tc_id in tc_dict:
+                    tc = tc_dict[tc_id]
+                    ws_tc.cell(row=row, column=status_col, value="PASS" if tc["passed"] else "FAIL")
+                    ws_tc.cell(row=row, column=duration_col, value=tc.get("duration", ""))
+                    
+        # 2. Update TEST_STEPS
+        if "TEST_STEPS" in wb.sheetnames:
+            ws_steps = wb["TEST_STEPS"]
+            headers = [cell.value for cell in ws_steps[1]]
+            
+            if "Status" not in headers:
+                ws_steps.cell(row=1, column=len(headers) + 1, value="Status")
+                headers.append("Status")
+            if "ActualResult" not in headers:
+                ws_steps.cell(row=1, column=len(headers) + 1, value="ActualResult")
+                headers.append("ActualResult")
+            if "Duration" not in headers:
+                ws_steps.cell(row=1, column=len(headers) + 1, value="Duration")
+                headers.append("Duration")
+                
+            status_col = headers.index("Status") + 1
+            actual_col = headers.index("ActualResult") + 1
+            duration_col = headers.index("Duration") + 1
+            
+            tc_id_col = headers.index("TestCaseID") + 1 if "TestCaseID" in headers else 1
+            step_no_col = headers.index("StepNo") + 1 if "StepNo" in headers else 2
+            
+            for row in range(2, ws_steps.max_row + 1):
+                tc_id = ws_steps.cell(row=row, column=tc_id_col).value
+                step_no = ws_steps.cell(row=row, column=step_no_col).value
+                
+                if tc_id and tc_id in tc_dict:
+                    tc = tc_dict[tc_id]
+                    # Find the specific step
+                    for step in tc["steps"]:
+                        if str(step["step"]) == str(step_no):
+                            ws_steps.cell(row=row, column=status_col, value="PASS" if step["passed"] else "FAIL")
+                            ws_steps.cell(row=row, column=actual_col, value=step.get("message", ""))
+                            ws_steps.cell(row=row, column=duration_col, value=step.get("duration", ""))
+                            break
+                            
+        wb.save(excel_path)
+        print(f"Excel input file updated with results: {excel_path}")
+        return True
+    except Exception as e:
+        print(f"Failed to update input excel file: {e}")
+        return False
