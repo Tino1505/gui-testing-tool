@@ -3,6 +3,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 import time
+import os
 
 from engine.excel_reader import read_test_data
 from engine.browser import BrowserManager
@@ -33,21 +34,22 @@ def get_locator_tuple(locator_type, locator_str):
         else:
             return (By.CSS_SELECTOR, locator_str)
 
-def resolve_data(data_val, test_data_dict):
+def resolve_data(data_val, current_data_row):
     """
-    Resolve data_val using TEST_DATA sheet. If not found, use data_val directly.
+    Resolve data_val using current data row. If not found, use data_val directly.
     """
     if not data_val or data_val == "-":
         return ""
-    # If it's a key in TEST_DATA, return the value, otherwise return the string itself
-    return test_data_dict.get(data_val, data_val)
+    if current_data_row and data_val in current_data_row:
+        return current_data_row[data_val]
+    return data_val
 
-def execute_step(driver, step, test_data_dict, elements_dict, pages_dict):
+def execute_step(driver, step, current_data_row, elements_dict, pages_dict):
     action = str(step.get("Action", step.get("action", ""))).lower().strip()
     target_id = step.get("TargetElement", step.get("target"))
-    data_key = step.get("TestDataKey", step.get("data"))
+    data_key = step.get("DataColumn", step.get("TestDataKey", step.get("data")))
     
-    actual_data = resolve_data(data_key, test_data_dict)
+    actual_data = resolve_data(data_key, current_data_row)
     
     message = f"Executed {action} on {target_id}"
     
@@ -57,13 +59,14 @@ def execute_step(driver, step, test_data_dict, elements_dict, pages_dict):
         if not page:
             raise Exception(f"Page ID '{target_id}' not found in OBJECT_REPOSITORY as url.")
         url = page.get("url")
+        page_name = page.get("name", target_id)
         if not url:
              # Try dynamic navigation or just stay if URL is empty (like for product detail)
-             message = f"Navigated to {target_id} (No static URL)"
+             message = f"Navigated: {page_name} (No static URL)"
         else:
              driver.get(url)
              time.sleep(2) # Basic wait
-             message = f"Navigated to {url}"
+             message = f"Navigated: {page_name}"
              
     elif action == "wait":
         if target_id and target_id != "-":
@@ -102,12 +105,12 @@ def execute_step(driver, step, test_data_dict, elements_dict, pages_dict):
             el = wait.until(EC.presence_of_element_located((by_type, by_val)))
             el.clear()
             el.send_keys(actual_data)
-            message = f"Input '{actual_data}' into {target_id}"
+            message = f"Input: '{actual_data}'"
             
         elif action == "click":
             el = wait.until(EC.element_to_be_clickable((by_type, by_val)))
             el.click()
-            message = f"Clicked {target_id}"
+            message = f"Clicked"
             
         elif action == "click_first":
             # wait for at least one
@@ -133,9 +136,9 @@ def execute_step(driver, step, test_data_dict, elements_dict, pages_dict):
         elif action == "verify_visible":
             el = wait.until(EC.presence_of_element_located((by_type, by_val)))
             if el.is_displayed():
-                message = f"Verified {target_id} is visible"
+                message = f"Visible"
             else:
-                raise Exception(f"{target_id} is not visible")
+                raise Exception(f"Not visible")
                 
         elif action == "select":
             el = wait.until(EC.presence_of_element_located((by_type, by_val)))
@@ -161,8 +164,18 @@ def run_tests(excel_path):
     driver = browser_manager.start(headless=False)
     
     results = []
-    screenshots_dir = "screenshots"
-    reports_dir = "reports"
+    
+    # Create run folder structure
+    from datetime import datetime
+    timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    run_dir = os.path.abspath(os.path.join(current_dir, "..", "..", "reports", f"run_{timestamp_str}"))
+    
+    screenshots_dir = os.path.join(run_dir, "screenshots")
+    reports_dir = run_dir
+    
+    os.makedirs(screenshots_dir, exist_ok=True)
+    os.makedirs(reports_dir, exist_ok=True)
     
     try:
         for tc in test_cases:
@@ -171,61 +184,77 @@ def run_tests(excel_path):
                 print(f"Skipping {tc_id} (run != Y)")
                 continue
                 
-            print(f"--- Running {tc_id}: {tc['summary']} ---")
+            dataset_name = tc.get("dataset")
             
-            tc_result = {
-                "tc_id": tc_id,
-                "summary": tc["summary"],
-                "passed": True,
-                "steps": [],
-                "screenshot": None
-            }
-            
-            tc_start_time = time.time()
-            
-            for step in tc["steps"]:
-                step_start_time = time.time()
-                step_no = step.get("StepNo", step.get("step"))
-                action = step.get("Action", step.get("action"))
-                target = step.get("TargetElement", step.get("target"))
-                data_key = step.get("TestDataKey", step.get("data"))
-                print(f"  Step {step_no}: {action} {target} {data_key}")
+            # Determine iterations
+            iterations = [{}] # default 1 iteration with empty data
+            if dataset_name and dataset_name in data["test_data"]:
+                dataset_rows = data["test_data"][dataset_name]
+                if dataset_rows:
+                    iterations = dataset_rows
+                    
+            for i, data_row in enumerate(iterations):
+                iter_suffix = f"_Iter{i+1}" if len(iterations) > 1 else ""
+                current_tc_id = f"{tc_id}{iter_suffix}"
                 
-                step_result = {
-                    "step": step_no,
-                    "action": action,
-                    "target": target,
-                    "data": data_key,
-                    "passed": False,
-                    "message": ""
+                print(f"--- Running {current_tc_id}: {tc['summary']} ---")
+                
+                tc_result = {
+                    "tc_id": current_tc_id,
+                    "summary": tc["summary"],
+                    "passed": True,
+                    "steps": [],
+                    "screenshot": None
                 }
                 
-                try:
-                    msg = execute_step(driver, step, data["test_data"], data["elements"], data["pages"])
-                    step_result["passed"] = True
-                    step_result["message"] = msg
-                except Exception as e:
-                    step_result["passed"] = False
-                    step_result["message"] = f"Error: {str(e)}"
-                    tc_result["passed"] = False
+                tc_start_time = time.time()
+                
+                for step in tc["steps"]:
+                    step_start_time = time.time()
+                    step_no = step.get("StepNo", step.get("step"))
+                    action = step.get("Action", step.get("action"))
+                    target = step.get("TargetElement", step.get("target"))
+                    data_key = step.get("DataColumn", step.get("TestDataKey", step.get("data")))
+                    actual_val = resolve_data(data_key, data_row) if data_key else ""
+                    log_data = f" -> '{actual_val}'" if actual_val else ""
+                    print(f"  Step {step_no}: {action} {target}{log_data}")
                     
-                step_end_time = time.time()
-                step_result["duration"] = f"{(step_end_time - step_start_time):.2f}s"
+                    step_result = {
+                        "step": step_no,
+                        "action": action,
+                        "target": target,
+                        "data": data_key,
+                        "passed": False,
+                        "message": ""
+                    }
+                    
+                    try:
+                        msg = execute_step(driver, step, data_row, data["elements"], data["pages"])
+                        step_result["passed"] = True
+                        step_result["message"] = msg
+                    except Exception as e:
+                        step_result["passed"] = False
+                        error_msg = str(e).split('\n')[0][:100]
+                        step_result["message"] = f"Error: {error_msg}"
+                        tc_result["passed"] = False
+                        
+                    step_end_time = time.time()
+                    step_result["duration"] = f"{(step_end_time - step_start_time):.2f}s"
+                    
+                    tc_result["steps"].append(step_result)
+                    
+                    if not step_result["passed"]:
+                        break # Stop executing further steps if one fails
                 
-                tc_result["steps"].append(step_result)
+                tc_end_time = time.time()
+                tc_result["duration"] = f"{(tc_end_time - tc_start_time):.2f}s"
                 
-                if not step_result["passed"]:
-                    break # Stop executing further steps if one fails
-            
-            tc_end_time = time.time()
-            tc_result["duration"] = f"{(tc_end_time - tc_start_time):.2f}s"
-            
-            # Take screenshot at the end of the test case (or when it fails)
-            screenshot_path = capture_screenshot(driver, tc_id, screenshots_dir)
-            if screenshot_path:
-                tc_result["screenshot"] = screenshot_path
-                
-            results.append(tc_result)
+                # Take screenshot at the end of the test case (or when it fails)
+                screenshot_path = capture_screenshot(driver, current_tc_id, screenshots_dir)
+                if screenshot_path:
+                    tc_result["screenshot"] = screenshot_path
+                    
+                results.append(tc_result)
             
     finally:
         browser_manager.stop()
@@ -233,5 +262,8 @@ def run_tests(excel_path):
     print("Generating reports...")
     html_report_path = generate_report(results, reports_dir)
     print(f"HTML Report saved to {html_report_path}")
-    update_input_excel_with_results(excel_path, results)
+    
+    backup_path = os.path.join(run_dir, "Master_Test_Suite_Backup.xlsx")
+    update_input_excel_with_results(excel_path, results, backup_path=backup_path)
+    
     print("Done!")
