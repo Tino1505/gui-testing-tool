@@ -7,7 +7,7 @@ thực thi kịch bản kiểm thử (Test Cases) trực tiếp từ file Excel.
 
 1. CẤU TRÚC THƯ MỤC
 -------------------
-qc-demo/
+gui-testing-tool/
 ├── core/
 │   ├── engine/                # Core logic tự động hóa (Selenium)
 │   │   ├── browser.py         # Quản lý khởi tạo trình duyệt
@@ -49,9 +49,9 @@ B2. Cài đặt các thư viện cần thiết:
 --------------------------
 Mở Terminal / CMD tại thư mục gốc `qc-demo/` và chạy lệnh sau:
 
-    > python core/run.py
+    venv\Scripts\activate
 
-    (Hoặc nếu dùng venv: venv\Scripts\python core\run.py)
+    > python core/run.py
 
 5. XEM KẾT QUẢ BÁO CÁO
 ----------------------
