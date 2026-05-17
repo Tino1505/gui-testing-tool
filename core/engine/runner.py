@@ -37,11 +37,29 @@ def get_locator_tuple(locator_type, locator_str):
 def resolve_data(data_val, current_data_row):
     """
     Resolve data_val using current data row. If not found, use data_val directly.
+    Handles variables in the format $sheet_name.column_name or $column_name.
     """
     if not data_val or data_val == "-":
         return ""
-    if current_data_row and data_val in current_data_row:
-        return current_data_row[data_val]
+        
+    data_val_str = str(data_val).strip()
+    
+    if data_val_str.startswith('$'):
+        parts = data_val_str[1:].split('.')
+        if len(parts) == 2:
+            sheet_key, col_key = parts[0].lower(), parts[1]
+            if current_data_row and sheet_key in current_data_row:
+                if col_key in current_data_row[sheet_key]:
+                    return current_data_row[sheet_key][col_key]
+        else:
+            key = parts[0]
+            if current_data_row and "_flat" in current_data_row and key in current_data_row["_flat"]:
+                return current_data_row["_flat"][key]
+                
+    # Fallback to direct lookup in flat dictionary (backward compatibility)
+    if current_data_row and "_flat" in current_data_row and data_val in current_data_row["_flat"]:
+        return current_data_row["_flat"][data_val]
+        
     return data_val
 
 def execute_step(driver, step, current_data_row, elements_dict, pages_dict):
@@ -136,9 +154,29 @@ def execute_step(driver, step, current_data_row, elements_dict, pages_dict):
         elif action == "verify_visible":
             el = wait.until(EC.presence_of_element_located((by_type, by_val)))
             if el.is_displayed():
-                message = f"Visible"
+                message = f"visible"
             else:
-                raise Exception(f"Not visible")
+                raise Exception(f"invisible")
+                
+        elif action == "check_status":
+            expected = str(step.get("Expected", "")).lower().strip()
+            if expected == "invisible":
+                from selenium.common.exceptions import TimeoutException
+                try:
+                    wait.until(EC.invisibility_of_element_located((by_type, by_val)))
+                    message = "invisible"
+                except TimeoutException:
+                    raise Exception("visible")
+            else:
+                from selenium.common.exceptions import TimeoutException
+                try:
+                    el = wait.until(EC.presence_of_element_located((by_type, by_val)))
+                    if el.is_displayed():
+                        message = "visible"
+                    else:
+                        raise Exception("invisible")
+                except TimeoutException:
+                    raise Exception("invisible")
                 
         elif action == "select":
             el = wait.until(EC.presence_of_element_located((by_type, by_val)))
@@ -235,7 +273,10 @@ def run_tests(excel_path):
                     except Exception as e:
                         step_result["passed"] = False
                         error_msg = str(e).split('\n')[0][:100]
-                        step_result["message"] = f"Error: {error_msg}"
+                        if error_msg in ["visible", "invisible"]:
+                            step_result["message"] = error_msg
+                        else:
+                            step_result["message"] = f"Error: {error_msg}"
                         tc_result["passed"] = False
                         
                     step_end_time = time.time()

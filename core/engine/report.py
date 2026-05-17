@@ -205,25 +205,44 @@ def update_input_excel_with_results(excel_path, results, backup_path=None):
             ws_tc = wb["TEST_CASE"]
             headers = [cell.value for cell in ws_tc[1]]
             
-            # Ensure columns exist
-            for col_name in ["Status", "Actual Result", "Screenshot", "Duration (s)"]:
-                if col_name not in headers:
-                    ws_tc.cell(row=1, column=len(headers) + 1, value=col_name)
-                    headers.append(col_name)
-                    
-            status_col = headers.index("Status") + 1
-            actual_col = headers.index("Actual Result") + 1
-            screen_col = headers.index("Screenshot") + 1
-            dur_col = headers.index("Duration (s)") + 1
+            # Ensure columns exist (fallback to old names if creating new ones, or create new ones if preferred)
+            # Find the target columns, checking both old and new names
+            def get_col_index(headers_list, possible_names):
+                for i, h in enumerate(headers_list):
+                    if h and str(h).strip().lower() in [n.lower() for n in possible_names]:
+                        return i + 1
+                return -1
+
+            status_col = get_col_index(headers, ["Status", "[o] test_result"])
+            if status_col == -1:
+                ws_tc.cell(row=1, column=len(headers) + 1, value="[o] test_result")
+                headers.append("[o] test_result")
+                status_col = len(headers)
+
+            actual_col = get_col_index(headers, ["Actual Result", "[o] observed"])
+            if actual_col == -1:
+                ws_tc.cell(row=1, column=len(headers) + 1, value="[o] observed")
+                headers.append("[o] observed")
+                actual_col = len(headers)
+
+            screen_col = get_col_index(headers, ["Screenshot", "[o] screenshot"])
+            if screen_col == -1:
+                ws_tc.cell(row=1, column=len(headers) + 1, value="[o] screenshot")
+                headers.append("[o] screenshot")
+                screen_col = len(headers)
+
+            dur_col = get_col_index(headers, ["Duration (s)", "[o] duration (s)"])
+            if dur_col == -1:
+                ws_tc.cell(row=1, column=len(headers) + 1, value="[o] duration (s)")
+                headers.append("[o] duration (s)")
+                dur_col = len(headers)
             
-            tc_id_col = headers.index("TC_ID") + 1
-            step_col = headers.index("Step") + 1 if "Step" in headers else -1
-            
-            iter_col = -1
-            if "Iteration" in headers:
-                iter_col = headers.index("Iteration") + 1
-            elif "Interation" in headers:
-                iter_col = headers.index("Interation") + 1
+            tc_id_col = get_col_index(headers, ["TC_ID", "tc-id"])
+            if tc_id_col == -1:
+                raise ValueError("Could not find 'TC_ID' or 'tc-id' column in TEST_CASE sheet.")
+
+            step_col = get_col_index(headers, ["Step", "step"])
+            iter_col = get_col_index(headers, ["Iteration", "Interation", "iteration"])
             
             current_tc_id = None
             
@@ -251,46 +270,58 @@ def update_input_excel_with_results(excel_path, results, backup_path=None):
                         # Find the step in this iteration
                         iter_num = i + 1
                         step_res = None
-                        for s in tc_iter["steps"]:
+                        is_last_step = False
+                        
+                        for step_idx, s in enumerate(tc_iter["steps"]):
                             if str(s["step"]) == step_no:
                                 step_res = s
+                                is_last_step = (step_idx == len(tc_iter["steps"]) - 1)
                                 break
                                 
-                        if step_res:
-                            prefix = f"[Iter {iter_num}] " if len(iterations) > 1 else ""
+                        if step_res and is_last_step:
+                            prefix = f"[iter {iter_num}] " if len(iterations) > 1 else ""
                             
                             status_lines.append(f"{prefix}{'PASS' if step_res['passed'] else 'FAIL'}")
-                            actual_lines.append(f"{prefix}{step_res.get('message', '')}")
                             
-                            # Screenshot logic: if step failed, or it's the last step and TC has screenshot
-                            screenshot = "N"
-                            if not step_res['passed'] and tc_iter.get('screenshot'):
-                                screenshot = tc_iter['screenshot']
-                            elif step_res['passed'] and tc_iter.get('screenshot') and tc_iter["steps"][-1]["step"] == step_res["step"]:
-                                screenshot = tc_iter['screenshot']
-                                
-                            display_screenshot = screenshot
-                            if screenshot != "N" and "reports" in screenshot:
-                                display_screenshot = screenshot.split("reports")[-1].lstrip("\\/")
-                                display_screenshot = f"\\reports\\{display_screenshot}".replace("/", "\\")
-                                
-                            screen_lines.append(f"{prefix}{display_screenshot}" if len(iterations) > 1 and display_screenshot != 'N' else display_screenshot)
+                            # actual result message
+                            msg = step_res.get('message', '')
+                            actual_lines.append(f"{prefix}{msg}")
                             
-                            dur = step_res.get('duration', '').replace('s', '')
+                            # Screenshot logic
+                            screenshot = tc_iter.get('screenshot')
+                            display_screenshot = ""
+                            if screenshot:
+                                if "reports" in screenshot:
+                                    display_screenshot = screenshot.split("reports")[-1].lstrip("\\/")
+                                    display_screenshot = f"\\reports\\{display_screenshot}".replace("/", "\\")
+                                else:
+                                    display_screenshot = screenshot
+                                    
+                            if display_screenshot:
+                                screen_lines.append(f"{prefix}{display_screenshot}" if len(iterations) > 1 else display_screenshot)
+                            
+                            # Use full TC duration on the final step
+                            dur = tc_iter.get('duration', '').replace('s', '')
                             dur_lines.append(f"{prefix}{dur}s")
                             
                     # Write to cells
-                    ws_tc.cell(row=row, column=status_col, value="\n".join(status_lines))
-                    ws_tc.cell(row=row, column=actual_col, value="\n".join(actual_lines))
-                    screen_cell = ws_tc.cell(row=row, column=screen_col, value="\n".join(screen_lines))
-                    ws_tc.cell(row=row, column=dur_col, value="\n".join(dur_lines))
+                    ws_tc.cell(row=row, column=status_col, value="\n".join(status_lines) if status_lines else "")
+                    ws_tc.cell(row=row, column=actual_col, value="\n".join(actual_lines) if actual_lines else "")
+                    
+                    screen_cell = ws_tc.cell(row=row, column=screen_col, value="\n".join(screen_lines) if screen_lines else "")
                     
                     # Add hyperlink if there's a valid screenshot
-                    has_screenshot_path = any("reports" in s for s in screen_lines if s)
-                    first_screenshot_iter = next((tc for tc in iterations if tc.get('screenshot')), None)
-                    if has_screenshot_path and first_screenshot_iter:
-                        screen_cell.hyperlink = first_screenshot_iter['screenshot']
-                        screen_cell.style = "Hyperlink"
+                    if screen_lines:
+                        has_screenshot_path = any("reports" in s for s in screen_lines if s)
+                        first_screenshot_iter = next((tc for tc in iterations if tc.get('screenshot')), None)
+                        if has_screenshot_path and first_screenshot_iter:
+                            screen_cell.hyperlink = first_screenshot_iter['screenshot']
+                            screen_cell.style = "Hyperlink"
+                    else:
+                        if hasattr(screen_cell, "hyperlink"):
+                            screen_cell.hyperlink = None
+                            
+                    ws_tc.cell(row=row, column=dur_col, value="\n".join(dur_lines) if dur_lines else "")
                             
         # Try to save to original file
         try:
