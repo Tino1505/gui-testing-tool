@@ -1,6 +1,6 @@
-import { BrowserManager } from '../browser.manager';
-import { ActionDispatcher } from '../../actions/action.dispatcher';
-import { DataResolver } from '../../utils/data.resolver';
+import { BrowserManager } from './browser.manager';
+import { ActionDispatcher } from '../actions/action.dispatcher';
+import { DataResolver } from '../utils/data.resolver';
 import * as path from 'path';
 import * as fs from 'fs';
 

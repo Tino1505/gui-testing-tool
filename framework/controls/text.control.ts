@@ -1,4 +1,4 @@
-import { BaseControl } from '../base/base.control';
+import { BaseControl } from './base.control';
 
 export class LabelControl extends BaseControl {
     // Inherits getText(), isVisible()

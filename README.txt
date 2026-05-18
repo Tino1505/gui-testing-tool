@@ -10,36 +10,42 @@ Dự án được xây dựng với kiến trúc Multi-Tenant, cho phép quản 
 -------------------
 gui-testing-tool/
 │
-├── framework/                         # LÕI FRAMEWORK – DÙNG CHUNG CHO MỌI DỰ ÁN
-│   ├── engine/                        # Core Flow
-│   │   ├── browser.manager.ts         # Quản lý Browser (Playwright)
-│   │   ├── excel/                     # Đọc/Ghi dữ liệu Excel
-│   │   ├── keyword/                   # Dispatch keyword -> Action
-│   │   └── report/                    # Quản lý Report & Screenshot
+├── framework/                         # ĐÓNG GÓI CHUẨN - DÙNG CHO MỌI WEBSITE
 │   │
-│   ├── actions/                       # Tầng Action (Keywords)
-│   │   └── common/                    # Các thao tác chung (navigation, keyboard, mouse, wait, validation, toggle, upload)
+│   ├── engine/                        # TRÁI TIM CỦA FRAMEWORK
+│   │   ├── core.runner.ts             # Vòng lặp đọc dòng Excel -> Gọi Action
+│   │   ├── browser.manager.ts         
+│   │   ├── execution.context.ts       # Lưu biến runtime (lưu token, order_id...)
+│   │   ├── excel/                     
+│   │   │   ├── excel.reader.ts        # Đọc 4 sheets (Test_Case, Page, Element, Data)
+│   │   │   ├── excel.writer.ts        # Ghi kết quả vào các cột [o]_...
+│   │   │   └── excel.validator.ts     # Validate file Excel trước khi chạy
+│   │   └── report/                    
 │   │
-│   ├── controls/                      # UI Element Abstraction
-│   │   ├── base/                      # Base Control
-│   │   ├── input/                     # Textbox
-│   │   ├── selection/                 # Dropdown, Combobox, Radio
-│   │   ├── toggle/                    # Checkbox
-│   │   ├── table/                     # Table, Pagination
-│   │   └── overlay/                   # Modal, Toast, Tooltip
+│   ├── actions/                       # MAP TRỰC TIẾP VỚI CỘT "ACTION"
+│   │   ├── action.dispatcher.ts       # Router: 'input' -> gọi InteractionAction.input()
+│   │   ├── browser.action.ts          # navigate, refresh, switch_tab
+│   │   ├── interaction.action.ts      # click, input, hover
+│   │   └── validation.action.ts       # verify_visible, verify_text
 │   │
-│   ├── drivers/                       # Tầng Low-level
-│   │   └── playwright.driver.ts       # Wrapper an toàn cho Playwright
+│   ├── controls/                      # BỌC LẠI CÁC ELEMENT UI
+│   │   ├── control.factory.ts         # Quyết định dùng Control nào dựa vào Prefix của Target
+│   │   ├── input.control.ts           # textboxes
+│   │   ├── button.control.ts          # buttons
+│   │   └── text.control.ts            # labels, spans, error messages
 │   │
-│   ├── utils/                         # Các hàm tiện ích
-│   │   ├── data.resolver.ts           # Phân tích biến từ Excel ($sheet.col)
-│   │   └── sleep.util.ts              # Hàm delay
+│   ├── drivers/                       
+│   │   └── playwright.wrapper.ts      # Gom toàn bộ Playwright API vào đây để an toàn
 │   │
-│   ├── config/                        # Cấu hình chung (Timeout, Viewport)
-│   └── run.ts                         # Entry point của Framework
+│   ├── utils/                         
+│   │   ├── locator.resolver.ts        # Nhận target (vd: txt_username) -> Lên sheet ELEMENT tìm xpath/css
+│   │   ├── data.resolver.ts           # Nhận value (vd: $data_login.username) -> Tìm ở sheet DATA_LOGIN
+│   │   └── string.util.ts
+│   │
+│   └── config/                        
 │
-├── test-data/                           # THƯ MỤC LƯU KỊCH BẢN TEST
-│   └── Master_Test_Suite.xlsx         # File kịch bản Test
+├── test-data/                         # CHỈ THAY ĐỔI THƯ MỤC NÀY KHI SANG DỰ ÁN MỚI
+│   └── Vinmec_Suite.xlsx              # Chứa kịch bản e-commerce, y tế, v.v.
 ├── reports/                           # Thư mục chứa các file báo cáo và evidence (tự động sinh)
 ├── package.json                       # Cấu hình NPM và scripts
 ├── tsconfig.json                      # Cấu hình TypeScript

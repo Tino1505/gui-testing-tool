@@ -1,4 +1,4 @@
-import { BaseControl } from '../base/base.control';
+import { BaseControl } from './base.control';
 
 export class TextBoxControl extends BaseControl {
     public async fill(text: string) {

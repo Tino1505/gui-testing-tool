@@ -1,5 +1,5 @@
 import { ExcelReader } from './engine/excel/excel.reader';
-import { KeywordRunner } from './engine/keyword/keyword.runner';
+import { KeywordRunner } from './engine/core.runner';
 import { ReportManager } from './engine/report/report.manager';
 import * as path from 'path';
 
