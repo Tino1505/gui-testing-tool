@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vinmec Healthcare System - Authen</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/@patternfly/patternfly@5.2.0/patternfly.min.css" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="pf-v5-c-login__container">
+    <header id="kc-header" class="pf-v5-c-login__header">
+      <div id="kc-header-wrapper" class="pf-v5-c-brand">Vinmec Healthcare System</div>
+    </header>
+    <main class="pf-v5-c-login__main">
+      <div class="pf-v5-c-login__main-header">
+        <h1 class="pf-v5-c-title pf-m-3xl" id="kc-page-title"><!-- template: login.ftl -->
+          Sign in to your account
+        </h1>
+      </div>
+      <div class="pf-v5-c-login__main-body">
+        <div id="kc-form">
+          <div id="kc-form-wrapper">
+            <form id="kc-form-login" class="pf-v5-c-form pf-v5-u-w-100"
+              onsubmit="event.preventDefault(); window.location.href='/select-hospital';" method="get"
+              novalidate="novalidate">
+
+              <div class="pf-v5-c-form__group">
+                <div class="pf-v5-c-form__group-label pf-v5-u-pb-xs">
+                  <label for="username" class="pf-v5-c-form__label">
+                    <span class="pf-v5-c-form__label-text">
+                      Username or email
+
+                    </span>
+                  </label>
+                </div>
+
+                <span class="pf-v5-c-form-control ">
+                  <input id="username" name="username" value="" type="text" autocomplete="username" autofocus=""
+                    aria-invalid="">
+                </span>
+
+                <div id="input-error-container-username">
+                </div>
+              </div>
+
+
+              <div class="pf-v5-c-form__group">
+                <div class="pf-v5-c-form__group-label pf-v5-u-pb-xs">
+                  <label for="password" class="pf-v5-c-form__label">
+                    <span class="pf-v5-c-form__label-text">
+                      Password
+                    </span>
+                  </label>
+                </div>
+
+                <div class="pf-v5-c-input-group">
+                  <div class="pf-v5-c-input-group__item pf-m-fill">
+                    <span class="pf-v5-c-form-control ">
+                      <input id="password" name="password" value="" type="password" autocomplete="current-password"
+                        aria-invalid="">
+                    </span>
+                  </div>
+                  <div class="pf-v5-c-input-group__item">
+                    <button class="pf-v5-c-button pf-m-control" type="button" aria-label="Show password"
+                      aria-controls="password" data-password-toggle="" data-icon-show="fa-eye fas"
+                      data-icon-hide="fa-eye-slash fas" data-label-show="Show password" data-label-hide="Hide password"
+                      id="password-show-password">
+                      <i class="fa-eye fas" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="pf-v5-c-form__helper-text" aria-live="polite">
+                  <div class="pf-v5-c-helper-text pf-v5-u-display-flex pf-v5-u-justify-content-space-between">
+                    <div class="pf-v5-c-helper-text__item">
+                      <span class="pf-v5-c-helper-text__item-text">
+                        <a href="#">Forgot Password?</a>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+
+                <div id="input-error-container-password">
+                </div>
+              </div>
+
+
+              <input type="hidden" id="id-hidden-input" name="credentialId">
+              <div class="pf-v5-c-form__group">
+                <div class="pf-v5-c-form__actions pf-v5-u-pt-xs pf-v5-u-flex-wrap">
+                  <button class="pf-v5-c-button pf-m-primary pf-m-block " name="login" id="kc-login" type="submit">
+                    Sign In
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="pf-v5-c-login__main-footer">
+      </div>
+    </main>
+  </div>
+</body>
+
+</html>

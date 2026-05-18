@@ -1,0 +1,32 @@
+{
+  "name": "gui-testing-tool",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "ts-node framework/run.ts",
+    "serve": "node mock-server/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tino1505/gui-testing-tool.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Tino1505/gui-testing-tool/issues"
+  },
+  "homepage": "https://github.com/Tino1505/gui-testing-tool#readme",
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "express": "^5.2.1",
+    "playwright": "^1.60.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.8.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3"
+  }
+}
