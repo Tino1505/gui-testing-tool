@@ -1,8 +1,8 @@
 import { DataResolver } from '../utils/data.resolver';
 import { ControlFactory } from '../controls/control.factory';
-import { PlaywrightDriver } from '../drivers/playwright.driver';
-import { SleepUtil } from '../utils/sleep.util';
-
+import { BrowserAction } from './browser.action';
+import { InteractionAction } from './interaction.action';
+import { ValidationAction } from './validation.action';
 export class ActionDispatcher {
     public static async executeStep(step: any, currentDataRow: any, elementsDict: any, pagesDict: any): Promise<string> {
         const action: string = String(step.Action || step.action || "").toLowerCase().trim();
@@ -11,35 +11,38 @@ export class ActionDispatcher {
         
         const actualData: string = DataResolver.resolveData(dataKey, currentDataRow);
         
-        // Handle navigation specifically as it doesn't target an element
-        if (action === "navigate") {
-            const page = pagesDict[targetId];
-            if (!page) throw new Error(`Page ID '${targetId}' not found in OBJECT_REPOSITORY.`);
-            
-            const url = page.url;
-            const pageName = page.name || targetId;
-            
-            if (!url) {
-                return `Navigated: ${pageName} (No static URL)`;
-            } else {
-                await PlaywrightDriver.navigate(url);
-                await SleepUtil.sleep(2000);
-                return `Navigated: ${pageName}`;
-            }
+        if (["navigate", "refresh", "switch_tab"].includes(action)) {
+            if (action === "navigate") return await BrowserAction.navigate(targetId, pagesDict);
+            if (action === "refresh") return await BrowserAction.refresh();
+            if (action === "switch_tab") return await BrowserAction.switchTab();
         }
-        
-        const elementInfo: any = targetId && targetId !== '-' ? elementsDict[targetId] : null;
 
-        // For all other actions, we delegate to the appropriate Control class
-        if (!elementInfo && action !== "wait") {
+        if (action === "wait") {
+            const ms = Number(actualData) || 2000;
+            await new Promise(resolve => setTimeout(resolve, ms));
+            return `Waited for ${ms}ms`;
+        }
+
+        const elementInfo: any = targetId && targetId !== '-' ? elementsDict[targetId] : null;
+        if (!elementInfo) {
             throw new Error(`TargetElement is required for action '${action}'`);
         }
         
-        const locatorType = elementInfo ? elementInfo.locator_type : "";
-        const locatorValue = elementInfo ? elementInfo.locator : "";
-
+        const locatorType = elementInfo.locator_type || "";
+        const locatorValue = elementInfo.locator || "";
         const control = ControlFactory.getControl(targetId, locatorType, locatorValue);
         
-        return await control.executeAction(action, actualData, step, targetId);
+        if (["click", "input", "hover", "type"].includes(action)) {
+            if (action === "click") return await InteractionAction.click(control, targetId);
+            if (action === "input" || action === "type") return await InteractionAction.input(control, actualData, targetId);
+            if (action === "hover") return await InteractionAction.hover(control, targetId);
+        }
+
+        if (["verify_visible", "verify_text"].includes(action)) {
+            if (action === "verify_visible") return await ValidationAction.verifyVisible(control, targetId);
+            if (action === "verify_text") return await ValidationAction.verifyText(control, actualData, targetId);
+        }
+
+        throw new Error(`Action '${action}' is not supported or not implemented yet.`);
     }
 }

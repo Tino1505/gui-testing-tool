@@ -1,5 +1,5 @@
 import { chromium, Browser, BrowserContext, Page } from 'playwright';
-import { PlaywrightDriver } from '../drivers/playwright.driver';
+import { PlaywrightDriver } from '../drivers/playwright.wrapper';
 
 export class BrowserManager {
     private browser: Browser | null = null;
