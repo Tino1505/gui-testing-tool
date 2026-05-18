@@ -1,68 +1,79 @@
 =============================================================
-             NO-CODE GUI TESTING TOOL ENGINE
+             NO-CODE GUI TESTING TOOL ENGINE (PLAYWRIGHT + TS)
 =============================================================
 
 Công cụ tự động hóa kiểm thử giao diện (GUI Testing) cho phép 
-thực thi kịch bản kiểm thử (Test Cases) trực tiếp từ file Excel theo mô hình Data-Driven.
+thực thi kịch bản kiểm thử (Test Cases) trực tiếp từ file Excel theo mô hình Data-Driven và Keyword-Driven.
+Dự án được xây dựng với kiến trúc Multi-Tenant, cho phép quản lý và chạy test cho nhiều dự án khác nhau (Ví dụ: Vinmec, Lazada...) bằng cùng một lõi Framework.
 
 1. CẤU TRÚC THƯ MỤC
 -------------------
 gui-testing-tool/
-├── core/
-│   ├── engine/                # Core logic tự động hóa (Selenium)
-│   │   ├── browser.py         # Quản lý khởi tạo trình duyệt
-│   │   ├── excel_reader.py    # Đọc và phân tích file Excel
-│   │   ├── report.py          # Xuất báo cáo HTML
-│   │   └── runner.py          # Thực thi thao tác (navigate, input, click...)
-│   │
-│   ├── requirements.txt       # Danh sách thư viện Python cần thiết
-│   └── run.py                 # File khởi chạy chương trình chính
 │
-├── demo-app/                  # Ứng dụng Web tĩnh để chạy demo automation
-├── drivers/                   # WebDrivers dùng để điều khiển trình duyệt
-├── reports/                   # Thư mục chứa các file báo cáo và evidence (tự động sinh)
-├── test-data/
-│   └── Master_Test_Suite.xlsx # File Excel cấu hình kịch bản test (Dành cho QA)
-└── README.txt                 # Tài liệu hướng dẫn sử dụng
+├── framework/                         # LÕI FRAMEWORK – DÙNG CHUNG CHO MỌI DỰ ÁN
+│   ├── engine/                        # Core Flow
+│   │   ├── browser.manager.ts         # Quản lý Browser (Playwright)
+│   │   ├── excel/                     # Đọc/Ghi dữ liệu Excel
+│   │   ├── keyword/                   # Dispatch keyword -> Action
+│   │   └── report/                    # Quản lý Report & Screenshot
+│   │
+│   ├── actions/                       # Tầng Action (Keywords)
+│   │   └── common/                    # Các thao tác chung (navigation, keyboard, mouse, wait, validation, toggle, upload)
+│   │
+│   ├── controls/                      # UI Element Abstraction
+│   │   ├── base/                      # Base Control
+│   │   ├── input/                     # Textbox
+│   │   ├── selection/                 # Dropdown, Combobox, Radio
+│   │   ├── toggle/                    # Checkbox
+│   │   ├── table/                     # Table, Pagination
+│   │   └── overlay/                   # Modal, Toast, Tooltip
+│   │
+│   ├── drivers/                       # Tầng Low-level
+│   │   └── playwright.driver.ts       # Wrapper an toàn cho Playwright
+│   │
+│   ├── utils/                         # Các hàm tiện ích
+│   │   ├── data.resolver.ts           # Phân tích biến từ Excel ($sheet.col)
+│   │   └── sleep.util.ts              # Hàm delay
+│   │
+│   ├── config/                        # Cấu hình chung (Timeout, Viewport)
+│   └── run.ts                         # Entry point của Framework
+│
+├── test-data/                           # THƯ MỤC LƯU KỊCH BẢN TEST
+│   └── Master_Test_Suite.xlsx         # File kịch bản Test
+├── reports/                           # Thư mục chứa các file báo cáo và evidence (tự động sinh)
+├── package.json                       # Cấu hình NPM và scripts
+├── tsconfig.json                      # Cấu hình TypeScript
+└── README.txt                         # Tài liệu hướng dẫn sử dụng
 
 2. CẤU TRÚC FILE EXCEL (test-data/Master_Test_Suite.xlsx)
 ---------------------------------------------------------
 Kiến trúc Automation Data theo mô hình Keyword-Driven và Data-Driven:
-- [Test_Cases]: Danh sách Test Case. Chỉ những Test Case đánh cờ 'Yes' ở cột Execute mới chạy.
-- [Test_Steps]: Kịch bản chi tiết của từng Test Case (Action, Target, Value).
-- [Test_Data]: Dữ liệu đầu vào cho từng bộ dữ liệu. Hỗ trợ chạy 1 Test Case với nhiều Data_ID.
-- [Object_Repository]: Lưu trữ định vị (Locator/XPath) của các phần tử trên trang.
+- [TEST_CASE]: Danh sách Test Case và các bước kịch bản chi tiết.
+- [DATA_*]: Dữ liệu đầu vào cho từng Test Case (Hỗ trợ loop data).
+- [ELEMENT]: Lưu trữ định vị (Locator) của các phần tử trên trang.
+- [PAGE]: Lưu trữ đường dẫn URL các trang web.
 
-3. HƯỚNG DẪN CLONE VÀ CÀI ĐẶT
+3. HƯỚNG DẪN CÀI ĐẶT
 -----------------------------
-Mở Terminal / CMD / Git Bash tại thư mục bạn muốn lưu code:
+Mở Terminal / CMD / PowerShell tại thư mục gốc của dự án `gui-testing-tool`:
 
-B1. Clone source code từ GitHub:
-    > git clone https://github.com/Tino1505/gui-testing-tool.git
-    > cd gui-testing-tool
+B1. Cài đặt các thư viện Node.js:
+    > npm install
 
-B2. Tạo môi trường ảo (Virtual Environment):
-    > python -m venv venv
-
-B3. Kích hoạt môi trường ảo (Bắt buộc mỗi lần mở Terminal mới):
-    - Trên Windows (CMD): 
-      > venv\Scripts\activate
-    - Trên Windows (PowerShell):
-      > venv\Scripts\Activate.ps1
-    - Trên Mac/Linux: 
-      > source venv/bin/activate
-
-B4. Cài đặt các thư viện cần thiết:
-    > pip install -r core/requirements.txt
+B2. Cài đặt trình duyệt cho Playwright (Bắt buộc chạy lần đầu):
+    > npx playwright install
 
 4. HƯỚNG DẪN THỰC THI TEST
 --------------------------
-Mở Terminal / CMD tại thư mục gốc `gui-testing-tool/` (đảm bảo môi trường ảo venv đang kích hoạt bằng lệnh ở B3):
+Mở Terminal tại thư mục gốc `gui-testing-tool/` và chạy lệnh:
 
-    > python core/run.py
+    > npm run test
+
+*(Hệ thống sẽ tự động tìm vào thư mục `test-data/Master_Test_Suite.xlsx` để đọc kịch bản và chạy)*
 
 5. XEM KẾT QUẢ BÁO CÁO
 ----------------------
-Sau khi chạy xong, kết quả được lưu tự động tại thư mục `reports/run_YYYYMMDD_HHMMSS/`:
-- Report_YYYYMMDD_HHMMSS.html: Báo cáo HTML trực quan, liệt kê chi tiết từng Test Case và dữ liệu tương ứng.
-- Các ảnh chụp màn hình (screenshots) khi có lỗi hoặc verify (tự động đính kèm vào báo cáo HTML).
+Sau khi chạy xong, kết quả được lưu tự động tại thư mục `reports/run_YYYY-MM-DDTHH-MM-SS/`:
+- Execution_Report.html: Báo cáo HTML trực quan, liệt kê chi tiết từng Test Case và dữ liệu tương ứng.
+- Master_Test_Suite_Backup.xlsx: File backup có ghi lại kết quả Pass/Fail.
+- screenshots/: Chứa ảnh chụp màn hình khi có lỗi hoặc khi kết thúc Test Case.

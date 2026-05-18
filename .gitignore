@@ -4,3 +4,4 @@ __pycache__/
 reports/
 screenshots/
 .vscode/
+node_modules/
