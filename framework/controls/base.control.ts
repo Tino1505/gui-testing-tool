@@ -53,34 +53,5 @@ export class BaseControl {
         return await this.getLocator().isVisible();
     }
 
-    public async executeAction(action: string, actualData: string, step: any, targetId: string): Promise<string> {
-        if (action === "click") {
-            await this.waitForVisible();
-            await this.click();
-            await new Promise(resolve => setTimeout(resolve, 500));
-            return `Clicked on ${targetId}`;
-        }
-        
-        if (action === "verify_visible") {
-            const isVis = await this.isVisible();
-            if (!isVis) throw new Error("Element not visible");
-            return `Verified ${targetId} is visible`;
-        }
 
-        if (action === "verify_text") {
-            await this.waitForVisible();
-            const text = await this.getText();
-            if (!text.includes(actualData)) {
-                throw new Error(`Text mismatch. Expected: ${actualData}, Actual: ${text}`);
-            }
-            return `Verified text for ${targetId}`;
-        }
-
-        if (action === "wait") {
-            await new Promise(resolve => setTimeout(resolve, Number(actualData) || 2000));
-            return `Wait for ${actualData}ms`;
-        }
-
-        throw new Error(`Action '${action}' is not supported on this control.`);
-    }
 }
