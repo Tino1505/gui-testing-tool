@@ -21,9 +21,6 @@ export class BrowserAction {
         return "Refreshed page";
     }
 
-    public static async switchTab(): Promise<string> {
-        return "Switched tab (not implemented yet)";
-    }
 
     public static async goBack(): Promise<string> {
         await PlaywrightDriver.getPage().goBack();
@@ -35,7 +32,7 @@ export class BrowserAction {
         return "Went forward to next page";
     }
 
-    public static async captureScreen(filenamePrefix: string): Promise<string> {
+    public static async screenshot(filenamePrefix: string): Promise<string> {
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         const page = PlaywrightDriver.getPage();
 

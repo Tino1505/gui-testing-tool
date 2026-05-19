@@ -1,10 +1,23 @@
 import { BaseControl } from '../controls/base.control';
+import { ValidationAction } from './validation.action';
+import { ControlFactory } from '../controls/control.factory';
 
 export class InteractionAction {
-    public static async click(control: BaseControl, targetId: string): Promise<string> {
+    public static async click(control: BaseControl, targetId: string, verifyTargetId?: string, expectedValue?: string, elementsDict?: any): Promise<string> {
         await control.waitForVisible();
         await control.click();
-        return `Clicked on ${targetId}`;
+        let resultMsg = `Clicked on ${targetId}`;
+
+        // Nếu file Excel có điền cột Value và Expected -> Gọi check_status
+        if (verifyTargetId && verifyTargetId !== '-' && expectedValue && elementsDict) {
+            const destInfo = elementsDict[verifyTargetId];
+            if (!destInfo) throw new Error(`Verify element '${verifyTargetId}' not found in ELEMENT sheet.`);
+            
+            const verifyControl = ControlFactory.getControl(verifyTargetId, destInfo.locator_type, destInfo.locator);
+            const verifyMsg = await ValidationAction.checkStatus(verifyControl, verifyTargetId, "", expectedValue);
+            resultMsg += ` | Auto-verified: ${verifyMsg}`;
+        }
+        return resultMsg;
     }
 
     public static async doubleClick(control: BaseControl, targetId: string): Promise<string> {
@@ -55,7 +68,7 @@ export class InteractionAction {
         return `Hovered on ${targetId}`;
     }
 
-    public static async select(control: any, data: string, targetId: string): Promise<string> {
+    public static async selectByText(control: any, data: string, targetId: string): Promise<string> {
         await control.waitForVisible();
         await control.getLocator().selectOption({ label: data });
         return `Selected '${data}' in ${targetId}`;

@@ -3,16 +3,14 @@ import { BaseControl } from '../controls/base.control';
 export class ValidationAction {
     public static async checkStatus(control: BaseControl, targetId: string, actualData: string, expectedValue: string): Promise<string> {
         const expected = expectedValue.toLowerCase();
-        
+
         if (expected === "visible") return await this.verifyVisible(control, targetId);
         if (expected === "hidden") return await this.verifyHidden(control, targetId);
         if (expected === "exists") return await this.verifyExists(control, targetId);
         if (expected === "not_exists") return await this.verifyNotExists(control, targetId);
         if (expected === "enabled") return await this.verifyEnabled(control, targetId);
         if (expected === "disabled") return await this.verifyDisabled(control, targetId);
-        
-        // If not a standard state keyword, assume expected is the target Text or Value to verify
-        // Or if data column was used, verifyText(actualData)
+
         const textToVerify = expectedValue || actualData;
         return await this.verifyText(control, textToVerify, targetId);
     }
@@ -45,6 +43,28 @@ export class ValidationAction {
         const count = await control.getLocator().count();
         if (count > 0) throw new Error("Element exists in DOM but expected to not exist");
         return `Verified ${targetId} does not exist`;
+    }
+
+    public static async verifyEnabled(control: BaseControl, targetId: string): Promise<string> {
+        try {
+            await control.waitForVisible();
+            const isEnabled = await control.getLocator().isEnabled();
+            if (!isEnabled) throw new Error(`Element ${targetId} is disabled but expected to be enabled`);
+            return `Verified ${targetId} is enabled`;
+        } catch (e: any) {
+            throw new Error(`Element ${targetId} is not enabled: ${e.message}`);
+        }
+    }
+
+    public static async verifyDisabled(control: BaseControl, targetId: string): Promise<string> {
+        try {
+            await control.waitForVisible();
+            const isDisabled = await control.getLocator().isDisabled();
+            if (!isDisabled) throw new Error(`Element ${targetId} is enabled but expected to be disabled`);
+            return `Verified ${targetId} is disabled`;
+        } catch (e: any) {
+            throw new Error(`Element ${targetId} is not disabled: ${e.message}`);
+        }
     }
 
     public static async verifyText(control: BaseControl, actualData: string, targetId: string): Promise<string> {

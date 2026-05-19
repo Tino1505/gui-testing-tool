@@ -56,28 +56,51 @@ Khi có một yêu cầu update (ví dụ: thêm một Keyword mới hoặc hỗ
      ```
 
 ### Kịch bản B: Thêm một UI Control mới
-*Ví dụ: Thêm control cho Checkbox với tiền tố ID là `chk_`.*
+*Ví dụ: Thêm control cho Modal với tiền tố ID là `mdl_`.*
 
 1. **Bước 1: Tạo Control Class**
-   * Tạo file mới `framework/controls/checkbox.control.ts`.
+   * Tạo file mới `framework/controls/modal.control.ts`.
    * Viết class kế thừa `BaseControl` và bổ sung các hàm đặc thù (nếu có):
      ```typescript
      import { BaseControl } from './base.control';
-     export class CheckboxControl extends BaseControl {
-         // Override hoặc viết thêm logic riêng cho checkbox ở đây nếu cần
+     export class ModalControl extends BaseControl {
+         // Override hoặc viết thêm logic riêng
      }
      ```
 2. **Bước 2: Cập nhật Control Factory**
    * Mở `framework/controls/control.factory.ts`.
-   * Import class mới: `import { CheckboxControl } from './checkbox.control';`
+   * Import class mới: `import { ModalControl } from './modal.control';`
    * Thêm logic nhận diện tiền tố:
      ```typescript
-     else if (id.startsWith('chk_')) {
-         return new CheckboxControl(locatorType, locatorValue);
+     else if (id.startsWith('mdl_')) {
+         return new ModalControl(locatorType, locatorValue);
      }
      ```
 
-## 3. Tổng kết
+## 3. Danh sách Action và Control mặc định đã hỗ trợ (Data/Keyword Mapping)
+
+Để tuân thủ "Framework hướng cấu hình - Code không đổi khi đổi dự án", framework đã tích hợp sẵn hầu hết các thao tác cơ bản và ánh xạ với file Excel (`ACTION_LIST`).
+
+**Các Action Keyword đã được map:**
+* **Điều hướng:** `navigate`, `go_back`, `go_forward`, `refresh`
+* **Tương tác:** `click`, `double_click`, `right_click`, `hover`, `focus`, `blur`
+* **Nhập liệu:** `input`, `clear`, `press_key`
+* **Dropdown/Select:** `select_by_text`, `select_by_value`
+* **Checkbox/Radio:** `check`, `uncheck`
+* **Nâng cao:** `upload_file`, `drag_drop`, `scroll_to`, `scroll_by`, `screenshot`
+* **Kiểm tra/Verify:** `check_status` (có thể kiểm tra trạng thái bằng `enabled`, `disabled`, `visible`, `hidden`, v.v. thông qua cột Expected).
+* **Khác:** `log`, `fail`, `skip`
+
+**Các UI Control Prefix đã được map (ở `control.factory.ts`):**
+* **TextBox:** `txt_`, `inp_`
+* **Button:** `btn_`
+* **Label/Text:** `lbl_`, `txtv_`
+* **Checkbox/Radio:** `chk_`, `cb_`, `rdo_`, `radio_`
+* **Dropdown/Select:** `ddl_`, `cbo_`, `select_`, `dropdown_`
+
+Khi viết kịch bản ở Test Case, chỉ cần sử dụng tên Element Name chứa các Prefix trên, Factory sẽ tự động khởi tạo Control tương ứng.
+
+## 4. Tổng kết
 
 Cách thiết kế này giúp hệ thống:
 * **Dễ bảo trì**: Mọi logic tương tác đều ở `actions/`, mọi UI element đều quản lý ở `controls/`.
