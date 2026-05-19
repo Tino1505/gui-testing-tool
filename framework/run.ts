@@ -1,5 +1,6 @@
 import { ExcelReader } from './engine/excel/excel.reader';
 import { KeywordRunner } from './engine/core.runner';
+import { ExcelValidator } from './engine/excel/excel.validator';
 import { ReportManager } from './engine/report/report.manager';
 import * as path from 'path';
 
@@ -10,7 +11,15 @@ async function main() {
 
     const data = await ExcelReader.readTestData(excelPath);
     
-    console.log("[Framework] Starting Execution...");
+    console.log("[Framework] Validating Excel data...");
+    const errors = ExcelValidator.validate(data);
+    if (errors.length > 0) {
+        console.error("❌ VALIDATION FAILED! Please fix the following errors in your Excel file before running:");
+        errors.forEach(err => console.error(`  - ${err}`));
+        process.exit(1);
+    }
+
+    console.log("[Framework] Validation Passed. Starting Execution...");
     const { results, runDir } = await KeywordRunner.runTests(data);
 
     if (results.length > 0) {
