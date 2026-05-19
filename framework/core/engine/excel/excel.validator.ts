@@ -6,6 +6,7 @@ export class ExcelValidator {
         'refresh': { requiresTarget: false, requiresData: false, allowedPrefixes: ['*'] },
         'switch_tab': { requiresTarget: false, requiresData: true, allowedPrefixes: ['*'] },
         'wait': { requiresTarget: false, requiresData: true, allowedPrefixes: ['*'] },
+        'capture_screen': { requiresTarget: false, requiresData: false, allowedPrefixes: ['*'] },
 
         // 1. Interaction
         'click': { requiresTarget: true, requiresData: false, allowedPrefixes: ['*'] },
@@ -17,12 +18,7 @@ export class ExcelValidator {
         'press_key': { requiresTarget: true, requiresData: true, allowedPrefixes: ['*'] },
 
         // 2. Validation - Functional
-        'verify_visible': { requiresTarget: true, requiresData: false, allowedPrefixes: ['*'] },
-        'verify_hidden': { requiresTarget: true, requiresData: false, allowedPrefixes: ['*'] },
-        'verify_text': { requiresTarget: true, requiresData: true, allowedPrefixes: ['*'] },
-        'verify_value': { requiresTarget: true, requiresData: true, allowedPrefixes: ['txt_', 'inp_', 'ddl_', 'rdo_', 'chk_'] },
-        'verify_enabled': { requiresTarget: true, requiresData: false, allowedPrefixes: ['*'] },
-        'verify_disabled': { requiresTarget: true, requiresData: false, allowedPrefixes: ['*'] },
+        'check_status': { requiresTarget: true, requiresData: false, allowedPrefixes: ['*'] },
 
         // 3. Validation - UI/UX
         'verify_css': { requiresTarget: true, requiresData: true, allowedPrefixes: ['*'] },

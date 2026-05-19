@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "ts-node framework/run.ts",
-    "serve": "node mock-server/server.js"
+    "serve": "node mock-server/server.js",
+    "update-excel-template": "python framework/core/utils/update_excel_template.py"
   },
   "repository": {
     "type": "git",

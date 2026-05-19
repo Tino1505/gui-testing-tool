@@ -1,4 +1,4 @@
-import { PlaywrightDriver } from '../drivers/playwright.wrapper';
+import { PlaywrightDriver } from '../core/drivers/playwright.wrapper';
 import { Locator } from 'playwright';
 export class BaseControl {
     protected locatorType: string;
@@ -9,7 +9,7 @@ export class BaseControl {
         this.locatorValue = locatorValue;
     }
 
-    protected getLocator(): Locator {
+    public getLocator(): Locator {
         return PlaywrightDriver.getLocator(this.locatorType, this.locatorValue);
     }
 
@@ -23,6 +23,26 @@ export class BaseControl {
 
     public async click() {
         await this.getLocator().click();
+    }
+
+    public async doubleClick() {
+        await this.getLocator().dblclick();
+    }
+
+    public async rightClick() {
+        await this.getLocator().click({ button: 'right' });
+    }
+
+    public async clear() {
+        await this.getLocator().clear();
+    }
+
+    public async focus() {
+        await this.getLocator().focus();
+    }
+
+    public async dragTo(destination: Locator) {
+        await this.getLocator().dragTo(destination);
     }
 
     public async getText(): Promise<string> {
