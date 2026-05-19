@@ -78,7 +78,7 @@ export class ExcelReader {
                     sheet.eachRow((row, rowNumber) => {
                         if (rowNumber === 1) return;
                         if (!row.getCell(1).value) return; // Empty dataset
-                        
+
                         const rowData: any = {};
                         row.eachCell((cell, colNumber) => {
                             let val = cell.value;
@@ -102,27 +102,31 @@ export class ExcelReader {
                             if (idx >= data.test_data[dataset].length) {
                                 data.test_data[dataset].push({ "_flat": {} });
                             }
-                            
+
                             data.test_data[dataset][idx][sheetKey] = rowData;
                             Object.assign(data.test_data[dataset][idx]["_flat"], rowData);
-                            
+
                             localIndices[dataset]++;
                         }
                     });
                 }
             });
 
-            // 4. Read TEST_CASE
+            // 4. Read all TEST_CASE sheets
             const groupedScenarios: any = {};
-            let currentTcId: string | null = null;
-            let currentDataset: string | null = null;
 
-            const tcSheet = workbook.getWorksheet('TEST_CASE');
-            if (tcSheet) {
+            workbook.eachSheet((tcSheet, id) => {
+                if (!tcSheet.name.toUpperCase().startsWith('TEST_CASE')) {
+                    return;
+                }
+
+                let currentTcId: string | null = null;
+                let currentDataset: string | null = null;
                 const headers = tcSheet.getRow(1).values as string[];
+
                 tcSheet.eachRow((row, rowNumber) => {
                     if (rowNumber === 1) return;
-                    
+
                     const rowData: any = {};
                     let isEmpty = true;
                     row.eachCell((cell, colNumber) => {
@@ -135,7 +139,7 @@ export class ExcelReader {
                         rowData[headers[colNumber]] = val?.toString() || val;
                         isEmpty = false;
                     });
-                    
+
                     if (isEmpty) return;
 
                     const tcId = rowData['TC_ID'] || rowData['tc-id'];
@@ -150,6 +154,7 @@ export class ExcelReader {
                                 summary: rowData['Summary'] || rowData['summary'] || "",
                                 run: true,
                                 dataset: currentDataset,
+                                sheet_name: tcSheet.name,
                                 steps: []
                             };
                         }
@@ -169,7 +174,7 @@ export class ExcelReader {
                         }
                     }
                 });
-            }
+            });
 
             data.test_cases = Object.values(groupedScenarios);
             return data;

@@ -1,5 +1,5 @@
 import { BrowserManager } from './browser.manager';
-import { ActionDispatcher } from '../actions/action.dispatcher';
+import { ActionDispatcher } from '../../actions/action.dispatcher';
 import { DataResolver } from '../utils/data.resolver';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -11,9 +11,6 @@ export class KeywordRunner {
             console.log("No test cases found.");
             return { results: [], runDir: "" };
         }
-
-        const browserManager = new BrowserManager();
-        const page = await browserManager.start(false);
 
         const results: any[] = [];
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -46,10 +43,15 @@ export class KeywordRunner {
                     const currentTcId = `${tcId}${iterSuffix}`;
 
                     console.log(`--- Running ${currentTcId}: ${tc.summary} ---`);
+                    
+                    const browserManager = new BrowserManager();
+                    const page = await browserManager.start(false);
 
-                    const tcResult = {
+                    try {
+                        const tcResult = {
                         tc_id: currentTcId,
                         summary: tc.summary,
+                        sheet_name: tc.sheet_name,
                         passed: true,
                         steps: [] as any[],
                         screenshot: null as string | null,
@@ -61,12 +63,16 @@ export class KeywordRunner {
                     for (const step of tc.steps) {
                         const stepStartTime = Date.now();
                         const stepNo = step.StepNo || step.step;
-                        const action = step.Action || step.action;
+                        const action = step.Action || step.actions || step.action;
                         const target = step.TargetElement || step.target;
-                        const dataKey = step.DataColumn || step.TestDataKey || step.data;
+                        const dataKey = step.DataColumn || step.TestDataKey || step.data || step.value;
                         const resolvedData = DataResolver.resolveData(dataKey, dataRow);
 
+                        const expectedKey = step.Expected || step.expected || "";
+                        const resolvedExpected = DataResolver.resolveData(expectedKey, dataRow);
+
                         let logData = dataKey ? ` -> '${resolvedData}'` : "";
+                        if (resolvedExpected) logData += ` (Expected: '${resolvedExpected}')`;
                         console.log(`  Step ${stepNo}: ${action} ${target}${logData}`);
 
                         const stepResult = {
@@ -96,6 +102,14 @@ export class KeywordRunner {
 
                         const stepEndTime = Date.now();
                         stepResult.duration = `${((stepEndTime - stepStartTime) / 1000).toFixed(2)}s`;
+                        
+                        // Log Pass/Fail result to console
+                        if (stepResult.passed) {
+                            console.log(`    \x1b[32m✔ PASS\x1b[0m (${stepResult.duration})`);
+                        } else {
+                            console.log(`    \x1b[31m✘ FAIL\x1b[0m: ${stepResult.message}`);
+                        }
+                        
                         tcResult.steps.push(stepResult);
 
                         if (!stepResult.passed) {
@@ -108,6 +122,15 @@ export class KeywordRunner {
 
                     // Take screenshot
                     try {
+                        // Wait for page to settle (network idle) before taking screenshot
+                        // Increased timeout to 15s to handle slow SIT APIs
+                        await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {
+                            console.log("    [Warning] Network is still busy after 15s, proceeding with screenshot...");
+                        });
+                        
+                        // Buffer for fade-out animations to finish
+                        await page.waitForTimeout(1000);
+                        
                         const screenshotFile = `${currentTcId}.png`;
                         const screenshotPath = path.join(screenshotsDir, screenshotFile);
                         await page.screenshot({ path: screenshotPath, fullPage: true });
@@ -116,11 +139,14 @@ export class KeywordRunner {
                         console.log("Failed to capture screenshot:", e);
                     }
 
-                    results.push(tcResult);
+                        results.push(tcResult);
+                    } finally {
+                        await browserManager.stop();
+                    }
                 }
             }
-        } finally {
-            await browserManager.stop();
+        } catch (globalErr) {
+            console.error("Global Test Execution Error:", globalErr);
         }
 
         return { results, runDir };
