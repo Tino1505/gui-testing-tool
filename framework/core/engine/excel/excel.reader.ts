@@ -176,6 +176,37 @@ export class ExcelReader {
                 });
             });
 
+            // Extract valid hospitals from DATA_LOGIN sheet
+            const validHospitals: string[] = [];
+            const dataLoginSheet = workbook.getWorksheet('DATA_LOGIN');
+            if (dataLoginSheet) {
+                const headers = dataLoginSheet.getRow(1).values as string[];
+                let colIndex = -1;
+                for (let i = 1; i < headers.length; i++) {
+                    if (headers[i] === 'select_hospital') {
+                        colIndex = i;
+                        break;
+                    }
+                }
+                if (colIndex !== -1) {
+                    dataLoginSheet.eachRow((row, rowNumber) => {
+                        if (rowNumber === 1) return;
+                        const cell = row.getCell(colIndex);
+                        let val = cell.value;
+                        if (val && typeof val === 'object') {
+                            if ('text' in val) val = (val as any).text;
+                            else if ('richText' in val) val = (val as any).richText.map((rt: any) => rt.text).join('');
+                            else if ('result' in val) val = (val as any).result;
+                        }
+                        const strVal = val?.toString()?.trim();
+                        if (strVal) {
+                            validHospitals.push(strVal);
+                        }
+                    });
+                }
+            }
+            data.valid_hospitals = validHospitals;
+
             data.test_cases = Object.values(groupedScenarios);
             return data;
 

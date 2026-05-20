@@ -14,9 +14,9 @@ export class ActionDispatcher {
         const actualData: string = DataResolver.resolveData(dataKey, currentDataRow);
         const expectedValue: string = DataResolver.resolveData(expectedKey, currentDataRow).toLowerCase().trim();
 
-        if (["navigate", "refresh", "go_back", "go_forward", "screenshot"].includes(action)) {
+        if (["navigate", "refresh", "refresh precondition", "refresh_precondition", "go_back", "go_forward", "screenshot"].includes(action)) {
             if (action === "navigate") return await BrowserAction.navigate(targetId, pagesDict);
-            if (action === "refresh") return await BrowserAction.refresh();
+            if (action === "refresh" || action === "refresh precondition" || action === "refresh_precondition") return await BrowserAction.refresh();
             if (action === "go_back") return await BrowserAction.goBack();
             if (action === "go_forward") return await BrowserAction.goForward();
             if (action === "screenshot") return await BrowserAction.screenshot(targetId || "manual_capture");

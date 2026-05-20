@@ -22,6 +22,11 @@ app.get('/home', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'home.html'));
 });
 
+// Vaccination routes (SPA catch-all)
+app.get(/^\/vaccination(\/.*)?$/, (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'vaccination.html'));
+});
+
 // Default route to redirect to /login
 app.get('/', (req, res) => {
     res.redirect('/login');
