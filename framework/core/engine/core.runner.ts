@@ -22,7 +22,8 @@ export class KeywordRunner {
         fs.mkdirSync(screenshotsDir, { recursive: true });
 
         const browserManager = new BrowserManager();
-        let page = await browserManager.start(false);
+        const isHeadless = process.env.HEADLESS !== 'false';
+        let page = await browserManager.start(isHeadless);
 
         try {
             for (const tc of testCases) {
@@ -58,7 +59,7 @@ export class KeywordRunner {
                     // Reset browser context for independent test cases to isolate session state
                     if (!hasPrecondition) {
                         console.log("  [Session] Resetting browser context for independent/negative test case.");
-                        page = await browserManager.resetContext(false);
+                        page = await browserManager.resetContext(isHeadless);
                     }
 
                     try {
