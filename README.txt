@@ -11,26 +11,30 @@ Dự án được xây dựng với kiến trúc Multi-Tenant, cho phép quản 
 gui-testing-tool/
 │
 ├── framework/                         # ĐÓNG GÓI CHUẨN (STANDARD LIBRARY)
+│   ├── run.ts                         # Entry Point khởi chạy toàn bộ framework
 │   │
-│   ├── core/                          # TRÁI TIM CỦA FRAMEWORK
-│   │   ├── engine/                    # Runner, Execution Context, Excel Reader/Writer, Report
-│   │   ├── drivers/                   # Playwright Wrapper (Bọc lại API Playwright)
-│   │   └── utils/                     # Locator Resolver, Data Resolver, String Util
+│   ├── core/                          # TRÁI TIM CỦA FRAMEWORK (CORE LAYER)
+│   │   ├── engine/                    # Trình điều khiển chính (Browser Manager, Core Runner)
+│   │   │   ├── excel/                 # excel.reader.ts (đọc Excel), excel.validator.ts (kiểm tra lỗi cấu trúc)
+│   │   │   └── report/                # report.manager.ts (tự động tạo báo cáo HTML & Screenshots)
+│   │   │
+│   │   ├── drivers/                   # playwright.wrapper.ts (Bọc lại API Playwright)
+│   │   └── utils/                     # data.resolver.ts (đọc biến động), update_excel_template.py (định dạng Excel)
 │   │
-│   ├── config/                        # [CẤU HÌNH DỰ ÁN] (Được phép sửa khi đổi môi trường)
-│   │   └── framework.config.ts
+│   ├── config/                        # Cấu hình dự án (framework.config.ts)
 │   │
-│   ├── actions/                       # [THƯ VIỆN KEYWORD] (Mở rộng khi cần action mới)
-│   │   ├── action.dispatcher.ts       # Router: 'input' -> gọi InteractionAction.input()
-│   │   ├── browser.action.ts          # navigate, refresh, switch_tab
-│   │   ├── interaction.action.ts      # click, input, hover
-│   │   └── validation.action.ts       # verify_visible, verify_text
+│   ├── actions/                       # THƯ VIỆN HÀNH ĐỘNG (KEYWORD LIBRARY)
+│   │   ├── action.dispatcher.ts       # Router: Điều phối hành động tương ứng ('click', 'input', ...)
+│   │   ├── browser.action.ts          # Thao tác trình duyệt (navigate, refresh, switch_tab)
+│   │   ├── interaction.action.ts      # Thao tác chuột/phím (click, input, hover)
+│   │   └── validation.action.ts       # Thao tác kiểm tra (verify_visible, verify_text)
 │   │
-│   └── controls/                      # [THƯ VIỆN COMPONENT] (Mở rộng khi có element mới)
-│       ├── control.factory.ts         # Quyết định dùng Control nào dựa vào Prefix của Target
-│       ├── input.control.ts           # textboxes
-│       ├── button.control.ts          # buttons
-│       └── text.control.ts            # labels, spans, error messages
+│   └── controls/                      # THƯ VIỆN PHẦN TỬ UI (UI CONTROLS LAYER)
+│       ├── control.factory.ts         # Nhận diện phần tử phù hợp qua Prefix của Target
+│       ├── base.control.ts            # Lớp Control cơ bản (click, hover, verify) cho buttons, labels
+│       ├── input.control.ts           # Lớp TextBoxControl cho ô nhập liệu (txt_, inp_)
+│       ├── dropdown.control.ts        # Lớp DropdownControl cho select box (ddl_, select_)
+│       └── checkbox.control.ts        # Lớp CheckboxControl cho checkbox/radio (chk_, cb_)
 │
 ├── test-data/                         # CHỈ THAY ĐỔI THƯ MỤC NÀY KHI SANG DỰ ÁN MỚI
 │   └── Master_Test_Suite.xlsx         # Chứa kịch bản e-commerce, y tế, v.v.
