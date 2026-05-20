@@ -23,8 +23,9 @@ def format_excel_template(file_path=r"c:\Users\datbt20\Documents\projects\gui-te
     green_font = Font(color="006100")
     green_fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")
 
-    def format_header(ws):
-        ws.freeze_panes = "A2"
+    def format_header(ws, freeze=True):
+        if freeze:
+            ws.freeze_panes = "A2"
         for cell in ws[1]:
             cell.fill = header_fill
             cell.font = header_font
@@ -33,17 +34,19 @@ def format_excel_template(file_path=r"c:\Users\datbt20\Documents\projects\gui-te
     # 1. ACTION_LIST
     if "ACTION_LIST" in wb.sheetnames:
         ws_action = wb["ACTION_LIST"]
-        format_header(ws_action)
+        format_header(ws_action, freeze=False)
+        ws_action.freeze_panes = None
+        ws_action.sheet_view.pane = None
+        ws_action.sheet_view.selection = []
         for row in range(2, ws_action.max_row + 1):
             ws_action.cell(row=row, column=1).font = monospace_font
             ws_action.cell(row=row, column=2).alignment = wrap_align
         ws_action.column_dimensions['B'].width = 40
-        # Protect ACTION_LIST
+        # Do not protect ACTION_LIST, ensure cells are not locked
         for row in ws_action.iter_rows():
             for cell in row:
-                cell.protection = Protection(locked=True)
-        ws_action.protection.sheet = True
-        ws_action.protection.password = '123'
+                cell.protection = Protection(locked=False)
+        ws_action.protection.sheet = False
 
     # 2. PAGE
     if "PAGE" in wb.sheetnames:
@@ -60,7 +63,15 @@ def format_excel_template(file_path=r"c:\Users\datbt20\Documents\projects\gui-te
         for row in range(2, ws_el.max_row + 1):
             ws_el.cell(row=row, column=3).alignment = wrap_align
         ws_el.conditional_formatting.add("A2:A1000", FormulaRule(formula=['COUNTIF($A$2:$A$1000,A2)>1'], fill=red_fill, font=red_font))
-        dv_locator = DataValidation(type="list", formula1='"css,xpath,id,name,PAGE"', allow_blank=True)
+        dv_locator = DataValidation(
+            type="list", 
+            formula1='"css,xpath,id,name,page"', 
+            allow_blank=True,
+            showErrorMessage=True,
+            errorStyle="stop",
+            errorTitle="Dữ liệu không hợp lệ",
+            error="Vui lòng chọn đúng locator type từ danh sách."
+        )
         ws_el.data_validations.dataValidation = []
         ws_el.add_data_validation(dv_locator)
         dv_locator.add("B2:B1000")
@@ -77,7 +88,15 @@ def format_excel_template(file_path=r"c:\Users\datbt20\Documents\projects\gui-te
                     break
             if type_col:
                 col_letter = get_column_letter(type_col)
-                dv_type = DataValidation(type="list", formula1='"pos,neg"', allow_blank=True)
+                dv_type = DataValidation(
+                    type="list", 
+                    formula1='"pos,neg"', 
+                    allow_blank=True,
+                    showErrorMessage=True,
+                    errorStyle="stop",
+                    errorTitle="Dữ liệu không hợp lệ",
+                    error="Vui lòng chọn 'pos' hoặc 'neg'."
+                )
                 ws_data.data_validations.dataValidation = []
                 ws_data.add_data_validation(dv_type)
                 dv_type.add(f"{col_letter}2:{col_letter}100")
@@ -123,16 +142,45 @@ def format_excel_template(file_path=r"c:\Users\datbt20\Documents\projects\gui-te
                 ws_tc.cell(row=row, column=7).alignment = left_align
 
             # Dropdown type (Col C)
-            dv_tc_type = DataValidation(type="list", formula1='"pos,neg"', allow_blank=True)
+            dv_tc_type = DataValidation(
+                type="list", 
+                formula1='"pos,neg"', 
+                allow_blank=True,
+                showErrorMessage=True,
+                errorStyle="stop",
+                errorTitle="Dữ liệu không hợp lệ",
+                error="Vui lòng chọn 'pos' hoặc 'neg'."
+            )
             dv_tc_type.add("C2:C100")
 
             # Dropdown action (Col E)
-            dv_action = DataValidation(type="list", formula1="OFFSET(ACTION_LIST!$A$2,0,0,COUNTA(ACTION_LIST!$A:$A)-1,1)", allow_blank=True)
+            dv_action = DataValidation(
+                type="list", 
+                formula1="OFFSET(ACTION_LIST!$A$2,0,0,COUNTA(ACTION_LIST!$A:$A)-1,1)", 
+                allow_blank=True,
+                showErrorMessage=True,
+                errorStyle="stop",
+                errorTitle="Dữ liệu không hợp lệ",
+                error="Vui lòng chọn đúng action từ danh sách ACTION_LIST."
+            )
             dv_action.add("E2:E100")
+
+            # Dropdown target (Col F)
+            dv_target = DataValidation(
+                type="list",
+                formula1="OFFSET(ELEMENT!$A$2,0,0,COUNTA(ELEMENT!$A:$A)-1,1)",
+                allow_blank=True,
+                showErrorMessage=True,
+                errorStyle="stop",
+                errorTitle="Dữ liệu không hợp lệ",
+                error="Vui lòng chọn đúng target từ danh sách element_id của sheet ELEMENT."
+            )
+            dv_target.add("F2:F100")
             
             ws_tc.data_validations.dataValidation = []
             ws_tc.add_data_validation(dv_tc_type)
             ws_tc.add_data_validation(dv_action)
+            ws_tc.add_data_validation(dv_target)
 
             # Conditional formatting for Result (Col I,J,K,L)
             res_col = "I" # Default
@@ -155,4 +203,5 @@ def format_excel_template(file_path=r"c:\Users\datbt20\Documents\projects\gui-te
     print(f"Successfully formatted template: {file_path}")
 
 if __name__ == "__main__":
-    format_excel_template()
+    format_excel_template(r"c:\Users\datbt20\Documents\projects\gui-testing-tool\test-data\Master_Test_Suite.xlsx")
+    format_excel_template(r"c:\Users\datbt20\Documents\projects\gui-testing-tool\test-data\Template_Master_Test_Suite.xlsx")

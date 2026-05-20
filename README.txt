@@ -1,5 +1,5 @@
 =============================================================
-             NO-CODE GUI TESTING TOOL ENGINE (PLAYWRIGHT + TS)
+             GUI TESTING TOOL (PLAYWRIGHT + TS)
 =============================================================
 
 Công cụ tự động hóa kiểm thử giao diện (GUI Testing) cho phép 
@@ -12,7 +12,7 @@ gui-testing-tool/
 │
 ├── framework/                         # ĐÓNG GÓI CHUẨN (STANDARD LIBRARY)
 │   │
-│   ├── core/                          # [CẤM SỬA] TRÁI TIM CỦA FRAMEWORK
+│   ├── core/                          # TRÁI TIM CỦA FRAMEWORK
 │   │   ├── engine/                    # Runner, Execution Context, Excel Reader/Writer, Report
 │   │   ├── drivers/                   # Playwright Wrapper (Bọc lại API Playwright)
 │   │   └── utils/                     # Locator Resolver, Data Resolver, String Util
