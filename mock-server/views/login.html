@@ -1,15 +1,113 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Medical HUB - Login</title>
+    <title>Smart Medical HUB - Đăng nhập</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: '#0072BC',
+                            hover: '#005A96',
+                            light: '#E6F1F8'
+                        },
+                        secondary: '#C9A84C'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
     </style>
 </head>
-<body>
-    <div class="relative z-10 flex w-full min-h-screen items-center"><div class="hidden lg:flex flex-1 items-center justify-center animate-fade-in"><img src="https://via.placeholder.com/300x100?text=Vinmec+Logo" alt="Vinmec International Hospital" class="w-auto" style="height: 300px;"></div><div class="flex flex-1 items-center justify-center p-6 sm:p-8"><div class="w-full max-w-[520px]"><div class="lg:hidden text-center mb-6"><img src="https://via.placeholder.com/150x50?text=Vinmec+Logo" alt="Vinmec" class="h-44 w-auto mx-auto"></div><div class="rounded-2xl overflow-hidden " style="background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(24px); box-shadow: rgba(0, 50, 80, 0.15) 0px 25px 60px -15px, rgba(255, 255, 255, 0.6) 0px 0px 0px 1px;"><div class="p-8 sm:p-9 space-y-6"><div class="text-center space-y-2 pb-4" style="border-bottom: 1px solid rgb(232, 240, 246);"><h2 class="font-bold leading-tight whitespace-nowrap" style="font-size: 1.75rem; color: rgb(26, 82, 118);">Smart Medical HUB</h2><p class="tracking-wide uppercase whitespace-nowrap" style="color: rgb(106, 154, 176); font-size: 10.5px; letter-spacing: 0.14em;">The Next Generation Hospital &amp; Clinic Management System</p></div><div class="text-center space-y-1"><h3 class="font-semibold" style="color: rgb(11, 46, 63); font-size: 1.15rem;">Chào mừng trở lại</h3><p style="color: rgb(156, 163, 175); font-size: 13px;">Đăng nhập để truy cập hệ thống</p></div><button class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 bg-primary hover:bg-primary/90 px-4 py-2 w-full h-12 min-h-[44px] text-base font-semibold rounded-xl border-0 text-white" style="background: linear-gradient(135deg, rgb(0, 114, 188) 0%, rgb(0, 90, 150) 100%); box-shadow: rgba(0, 114, 188, 0.4) 0px 4px 14px -4px;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-key h-5 w-5"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"></path><path d="m21 2-9.6 9.6"></path><circle cx="7.5" cy="15.5" r="5.5"></circle></svg><span class="ml-2">Đăng nhập SIT</span></button><div class="flex items-center gap-3"><div class="flex-1 h-px" style="background: rgb(232, 240, 246);"></div><span class="text-xs" style="color: rgb(156, 163, 175);">hoặc đăng nhập bằng</span><div class="flex-1 h-px" style="background: rgb(232, 240, 246);"></div></div><div class="space-y-2"><button class="inline-flex items-center justify-center whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 border hover:text-accent-foreground px-4 py-2 w-full h-11 rounded-xl text-base font-medium gap-2 bg-transparent border-[#D0E4F0] hover:bg-[#F0F7FC]" style="color: rgb(90, 122, 138);"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-key h-5 w-5"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"></path><path d="m21 2-9.6 9.6"></path><circle cx="7.5" cy="15.5" r="5.5"></circle></svg>Đăng nhập Local</button><button class="inline-flex items-center justify-center whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 border hover:text-accent-foreground px-4 py-2 w-full h-11 rounded-xl text-base font-medium gap-2 bg-transparent border-[#D0E4F0] hover:bg-[#F0F7FC]" style="color: rgb(90, 122, 138);"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-key h-5 w-5"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"></path><path d="m21 2-9.6 9.6"></path><circle cx="7.5" cy="15.5" r="5.5"></circle></svg>Đăng nhập qua V-ID</button></div><div class="flex justify-end items-center"><div class="flex gap-0.5 rounded-lg p-0.5" style="background: rgb(240, 245, 250);"><button class="px-3 py-1 text-xs font-medium rounded-md transition-all" style="color: rgb(156, 163, 175);">EN</button><button class="px-3 py-1 text-xs font-medium rounded-md transition-all" style="background: rgb(0, 114, 188); color: rgb(255, 255, 255);">VI</button></div></div><div class="pt-4" style="border-top: 1px solid rgb(232, 240, 246);"><button class="inline-flex items-center justify-center whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 border hover:text-accent-foreground px-4 py-2 w-full h-11 rounded-xl text-base font-medium gap-2 bg-transparent border-[#D0E4F0] hover:bg-[#F0F7FC]" type="button" style="color: rgb(90, 122, 138);"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text h-5 w-5"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>Tra cứu Hồ Sơ Bệnh Án</button></div></div></div><p class="text-center mt-5 font-medium" style="color: rgb(106, 154, 176); font-size: 13px;">Developed by VinSmart Future</p></div></div></div>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center relative overflow-hidden">
+    <!-- Decorative background elements -->
+    <div class="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-[0.03] blur-[100px] pointer-events-none" style="background: radial-gradient(circle, #0072BC, transparent 70%);"></div>
+    <div class="absolute bottom-0 left-0 w-[500px] h-[500px] rounded-full opacity-[0.03] blur-[100px] pointer-events-none" style="background: radial-gradient(circle, #C9A84C, transparent 70%);"></div>
+
+    <div class="relative z-10 flex w-full max-w-5xl items-center p-6 gap-12">
+        <!-- Left panel (Illustrations/Logo) -->
+        <div class="hidden lg:flex flex-1 flex-col items-center justify-center text-center space-y-6">
+            <span class="text-primary font-bold text-4xl tracking-wider flex items-center gap-2.5">
+                <span class="bg-primary text-white p-3 rounded-2xl flex items-center justify-center shadow-lg">VM</span>
+                <span class="font-extrabold text-3xl text-slate-800">VINMEC</span>
+            </span>
+            <div class="max-w-md">
+                <h1 class="text-xl font-bold text-slate-700">Hệ thống Quản lý Y tế Thông minh</h1>
+                <p class="text-xs text-slate-400 mt-2">Smart Medical HUB - The Next Generation Hospital & Clinic Management System</p>
+            </div>
+            <img src="https://via.placeholder.com/300x150?text=Vinmec+Healthcare" alt="Vinmec Healthcare" class="w-auto h-40 opacity-75 rounded-2xl">
+        </div>
+
+        <!-- Right panel (Login Form) -->
+        <div class="flex-1 flex items-center justify-center">
+            <div class="w-full max-w-[480px] bg-white rounded-2xl border border-slate-200/80 shadow-2xl p-8 sm:p-10 space-y-6">
+                <!-- Brand Title -->
+                <div class="text-center space-y-2 pb-4 border-b border-slate-100">
+                    <h2 class="font-extrabold text-2xl text-primary">Smart Medical HUB</h2>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Hệ thống quản lý y tế tương lai</p>
+                </div>
+
+                <!-- Form Welcome Header -->
+                <div class="text-center space-y-1">
+                    <h3 class="font-bold text-slate-800 text-lg">Chào mừng trở lại</h3>
+                    <p class="text-xs text-slate-400">Đăng nhập để truy cập hệ thống</p>
+                </div>
+
+                <!-- Action Button SIT (Required for SIT Flow) -->
+                <button onclick="window.location.href='/authen-vinmec'" class="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover px-4 py-3.5 w-full text-sm font-bold rounded-xl text-white shadow-lg shadow-primary/20 transition-all border-0 cursor-pointer">
+                    <i data-lucide="key-round" class="h-4.5 w-4.5"></i>
+                    <span>Đăng nhập SIT</span>
+                </button>
+
+                <!-- Separator -->
+                <div class="flex items-center gap-3">
+                    <div class="flex-1 h-px bg-slate-100"></div>
+                    <span class="text-[11px] text-slate-400 font-medium">hoặc đăng nhập bằng</span>
+                    <div class="flex-1 h-px bg-slate-100"></div>
+                </div>
+
+                <!-- Form options (Local Login / V-ID) -->
+                <div class="space-y-2.5">
+                    <button onclick="window.location.href='/authen-vinmec'" class="inline-flex items-center justify-center gap-2 border hover:bg-slate-50 px-4 py-3 w-full text-xs font-semibold rounded-xl text-slate-600 border-slate-200 transition-all cursor-pointer">
+                        <i data-lucide="user" class="h-4 w-4"></i>
+                        <span>Đăng nhập Local</span>
+                    </button>
+                    <button onclick="window.location.href='/authen-vinmec'" class="inline-flex items-center justify-center gap-2 border hover:bg-slate-50 px-4 py-3 w-full text-xs font-semibold rounded-xl text-slate-600 border-slate-200 transition-all cursor-pointer">
+                        <i data-lucide="shield-check" class="h-4 w-4"></i>
+                        <span>Đăng nhập qua V-ID</span>
+                    </button>
+                </div>
+
+                <!-- Footer Language -->
+                <div class="flex justify-between items-center pt-2">
+                    <span class="text-[11px] text-slate-400">Developed by VinSmart Future</span>
+                    <div class="flex gap-0.5 rounded-lg p-0.5 bg-slate-100">
+                        <button class="px-2.5 py-1 text-[10px] font-bold rounded-md text-slate-400 hover:text-slate-600 transition-colors">EN</button>
+                        <button class="px-2.5 py-1 text-[10px] font-bold rounded-md bg-white text-primary shadow-sm">VI</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
 </body>
 </html>
