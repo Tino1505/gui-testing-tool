@@ -29,10 +29,30 @@ export class BrowserManager {
         return this.page;
     }
 
+    public async resetContext(headless: boolean = false): Promise<Page> {
+        if (!this.browser) {
+            return await this.start(headless);
+        }
+        if (this.page) {
+            await this.page.close().catch(() => {});
+            this.page = null;
+        }
+        if (this.context) {
+            await this.context.close().catch(() => {});
+            this.context = null;
+        }
+        this.context = await this.browser.newContext({
+            viewport: null
+        });
+        this.page = await this.context.newPage();
+        PlaywrightDriver.setPage(this.page);
+        return this.page;
+    }
+
     public async stop() {
-        if (this.page) await this.page.close();
-        if (this.context) await this.context.close();
-        if (this.browser) await this.browser.close();
+        if (this.page) await this.page.close().catch(() => {});
+        if (this.context) await this.context.close().catch(() => {});
+        if (this.browser) await this.browser.close().catch(() => {});
         
         this.page = null;
         this.context = null;

@@ -4,18 +4,33 @@ export class ExcelValidator {
         // 0. Browser / Built-in
         'navigate': { requiresTarget: true, requiresData: false, allowedPrefixes: ['*'] }, // Target is page ID
         'refresh': { requiresTarget: false, requiresData: false, allowedPrefixes: ['*'] },
+        'refresh precondition': { requiresTarget: false, requiresData: false, allowedPrefixes: ['*'] },
+        'refresh_precondition': { requiresTarget: false, requiresData: false, allowedPrefixes: ['*'] },
         'switch_tab': { requiresTarget: false, requiresData: true, allowedPrefixes: ['*'] },
         'wait': { requiresTarget: false, requiresData: true, allowedPrefixes: ['*'] },
         'capture_screen': { requiresTarget: false, requiresData: false, allowedPrefixes: ['*'] },
+        'call_tc': { requiresTarget: true, requiresData: false, allowedPrefixes: ['*'] }, // Reusable test case
+        'run_tc': { requiresTarget: true, requiresData: false, allowedPrefixes: ['*'] }, // Reusable test case (alias)
 
         // 1. Interaction
         'click': { requiresTarget: true, requiresData: false, allowedPrefixes: ['*'] },
+        'double_click': { requiresTarget: true, requiresData: false, allowedPrefixes: ['*'] },
+        'right_click': { requiresTarget: true, requiresData: false, allowedPrefixes: ['*'] },
         'input': { requiresTarget: true, requiresData: true, allowedPrefixes: ['txt_', 'inp_'] },
         'clear': { requiresTarget: true, requiresData: false, allowedPrefixes: ['txt_', 'inp_'] },
+        'focus': { requiresTarget: true, requiresData: false, allowedPrefixes: ['*'] },
+        'blur': { requiresTarget: true, requiresData: false, allowedPrefixes: ['*'] },
         'hover': { requiresTarget: true, requiresData: false, allowedPrefixes: ['*'] },
         'drag_drop': { requiresTarget: true, requiresData: true, allowedPrefixes: ['*'] },
         'upload': { requiresTarget: true, requiresData: true, allowedPrefixes: ['file_', 'up_'] },
+        'upload_file': { requiresTarget: true, requiresData: true, allowedPrefixes: ['*'] },
         'press_key': { requiresTarget: true, requiresData: true, allowedPrefixes: ['*'] },
+        'select_by_text': { requiresTarget: true, requiresData: true, allowedPrefixes: ['*'] },
+        'select_by_value': { requiresTarget: true, requiresData: true, allowedPrefixes: ['*'] },
+        'check': { requiresTarget: true, requiresData: false, allowedPrefixes: ['*'] },
+        'uncheck': { requiresTarget: true, requiresData: false, allowedPrefixes: ['*'] },
+        'scroll_to': { requiresTarget: true, requiresData: false, allowedPrefixes: ['*'] },
+        'scroll_by': { requiresTarget: true, requiresData: true, allowedPrefixes: ['*'] },
 
         // 2. Validation - Functional
         'check_status': { requiresTarget: true, requiresData: false, allowedPrefixes: ['*'] },
@@ -36,6 +51,7 @@ export class ExcelValidator {
     public static validate(data: any): string[] {
         const errors: string[] = [];
         const testCases = data.test_cases || [];
+        const validHospitals: string[] = data.valid_hospitals || [];
 
         testCases.forEach((tc: any) => {
             if (!tc.steps || !Array.isArray(tc.steps)) return;
@@ -82,6 +98,18 @@ export class ExcelValidator {
                 }
                 if ((action === 'verify_css' || action === 'verify_attribute') && dataVal && !dataVal.includes(':')) {
                     errors.push(`[TC: ${tc.tc_id} - Step: ${stepNo}] Action '${action}' expects Data in format 'key:value', got '${dataVal}'`);
+                }
+                if (target === 'btn_dynamic_select' && dataVal) {
+                    if (!dataVal.startsWith('$')) {
+                        if (!validHospitals.includes(dataVal.trim())) {
+                            errors.push(
+                                `[TC: ${tc.tc_id} - Step: ${stepNo}] Tên bệnh viện không hợp lệ!\n` +
+                                `    - Giá trị nhập vào: '${dataVal}'\n` +
+                                `    - Danh sách bệnh viện hợp lệ cấu hình trong DATA_LOGIN:\n` +
+                                validHospitals.map(h => `      + ${h}`).join('\n')
+                            );
+                        }
+                    }
                 }
             });
         });

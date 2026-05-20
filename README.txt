@@ -51,23 +51,24 @@ Kiến trúc Automation Data theo mô hình Keyword-Driven và Data-Driven:
 - [ELEMENT]: Lưu trữ định vị (Locator) của các phần tử trên trang.
 - [PAGE]: Lưu trữ đường dẫn URL các trang web.
 
-3. HƯỚNG DẪN CÀI ĐẶT
------------------------------
-Mở Terminal / CMD / PowerShell tại thư mục gốc của dự án `gui-testing-tool`:
+3. HƯỚNG DẪN KHỞI CHẠY (QUAN TRỌNG)
+----------------------------------
+Mở Terminal / CMD / PowerShell và thực hiện tuần tự các bước dưới đây:
 
-B1. Cài đặt các thư viện Node.js:
+Bước 1: Tải mã nguồn (Clone dự án) từ GitHub:
+    > git clone https://github.com/Tino1505/gui-testing-tool.git
+    > cd gui-testing-tool
+
+Bước 2: Cài đặt các thư viện phụ thuộc (Node.js packages):
     > npm install
 
-B2. Cài đặt trình duyệt cho Playwright (Bắt buộc chạy lần đầu):
+Bước 3: Cài đặt trình duyệt cho Playwright (Bắt buộc ở lần đầu cài đặt):
     > npx playwright install
 
-4. HƯỚNG DẪN THỰC THI TEST
---------------------------
-Mở Terminal tại thư mục gốc `gui-testing-tool/` và chạy lệnh:
-
+Bước 4: Khởi chạy bộ kiểm thử (Run test):
     > npm run test
 
-*(Hệ thống sẽ tự động tìm vào thư mục `test-data/Master_Test_Suite.xlsx` để đọc kịch bản và chạy)*
+*(Hệ thống sẽ tự động tìm vào file cấu hình và đọc kịch bản từ `test-data/Master_Test_Suite.xlsx` để chạy)*
 
 5. XEM KẾT QUẢ BÁO CÁO
 ----------------------

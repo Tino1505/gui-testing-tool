@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as ExcelJS from 'exceljs';
+import { pathToFileURL } from 'url';
 
 export class ReportManager {
     public static generateHtmlReport(results: any[], runDir: string): string {
@@ -76,7 +77,7 @@ export class ReportManager {
         for (const tc of results) {
             const statusClass = tc.passed ? 'pass' : 'fail';
             const statusText = tc.passed ? 'PASS' : 'FAIL';
-            
+
             let screenshotHtml = '<div style="color: #ccc; font-style: italic; margin-top: 20px;">No evidence</div>';
             if (tc.screenshot) {
                 const relativePath = path.relative(runDir, tc.screenshot);
@@ -178,15 +179,15 @@ export class ReportManager {
 
                     const tcIdCellIndex = headers.findIndex(h => h === 'TC_ID' || h === 'tc-id');
                     const stepCellIndex = headers.findIndex(h => h === 'step');
-                    
+
                     if (tcIdCellIndex !== -1 && stepCellIndex !== -1) {
                         // First pass: Clear old results and map rows
                         const tcRowMap: { [key: string]: number } = {};
                         let currentTcId = "";
-                        
+
                         tcSheet.eachRow((row, rowNumber) => {
                             if (rowNumber === 1) return;
-                            
+
                             // Clear previous outputs
                             if (colIndices.testResult > -1) row.getCell(colIndices.testResult).value = null;
                             if (colIndices.observed > -1) row.getCell(colIndices.observed).value = null;
@@ -197,7 +198,7 @@ export class ReportManager {
                             if (tcIdVal) {
                                 currentTcId = tcIdVal;
                             }
-                            
+
                             const stepVal = row.getCell(stepCellIndex).value?.toString().trim();
                             if (currentTcId && stepVal) {
                                 tcRowMap[`${currentTcId}_${stepVal}`] = rowNumber;
@@ -218,7 +219,7 @@ export class ReportManager {
                                 const rowNum = tcRowMap[`${baseTcId}_${step.step}`];
                                 if (rowNum) {
                                     const row = tcSheet.getRow(rowNum);
-                                    
+
                                     const appendVal = (colIndex: number, val: string) => {
                                         if (colIndex > -1) {
                                             const cell = row.getCell(colIndex);
@@ -233,7 +234,7 @@ export class ReportManager {
                                     appendVal(colIndices.duration, step.duration);
                                 }
                             }
-                            
+
                             // Write screenshot ONLY to the last step of this TC run
                             if (r.screenshot && r.steps.length > 0) {
                                 const lastStep = r.steps[r.steps.length - 1];
@@ -252,12 +253,14 @@ export class ReportManager {
             }
 
             await workbook.xlsx.writeFile(backupPath);
-            console.log(`Excel Backup saved to ${backupPath}`);
-            
+            const relativeBackup = path.relative(process.cwd(), backupPath).replace(/\\/g, '/');
+            console.log(`Excel Backup: ${relativeBackup}`);
+
             // Also try to overwrite the original Master_Test_Suite.xlsx
             try {
                 await workbook.xlsx.writeFile(originalPath);
-                console.log(`Original Excel file updated with results: ${originalPath}`);
+                const relativeOriginal = path.relative(process.cwd(), originalPath).replace(/\\/g, '/');
+                console.log(`Original Excel updated: ${relativeOriginal}`);
             } catch (err) {
                 console.error(`[Warning] Could not update the original Excel file (it might be open). Results are safely saved in the backup path.`);
                 console.error(err);
