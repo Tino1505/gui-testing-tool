@@ -23,21 +23,57 @@ graph TD
 
 ---
 
-## 2. Chi tiết Cấu trúc Thư mục (Project Folder Structure)
+## 2. Cấu trúc Thư mục (Project Folder Structure)
 
-Thư mục `/framework` được phân chia lớp chặt chẽ theo mô hình hướng đối tượng (OOP) và kiến trúc sạch:
+Cấu trúc dự án được phân chia chặt chẽ để cô lập phần mã nguồn khung chạy (Engine) khỏi kịch bản và dữ liệu nghiệp vụ:
 
-| Thư mục / File | Vai trò nghiệp vụ | Cơ chế hướng cấu hình (Không đổi code) |
-| :--- | :--- | :--- |
-| 📁 **`config/`** | Cấu hình tham số chạy toàn cục. | Định nghĩa timeouts, thư mục chứa báo cáo, và chế độ chạy ẩn danh (`HEADLESS`). |
-| 📁 **`core/drivers/`** | Quản lý phiên và đối tượng trình duyệt. | `playwright.wrapper.ts` đóng gói trực tiếp Playwright Page để cung cấp driver thống nhất. |
-| 📁 **`core/engine/`** | Bộ máy quét và thực thi kịch bản. | Chứa `browser.manager.ts` (quản lý vòng đời trình duyệt) và `core.runner.ts` (đọc kịch bản, chạy từng bước và tự động chụp ảnh màn hình). |
-| 📁 **`core/engine/excel/`** | Phân tích cú pháp và xác thực Excel. | Đọc bảng tính Excel (`excel.reader.ts`) và tự động kiểm tra lỗi cấu trúc (`excel.validator.ts`) để từ chối chạy nếu kịch bản lỗi cấu trúc. |
-| 📁 **`core/engine/report/`** | Trình tạo báo cáo tự động. | Tạo file báo cáo HTML trực quan và tự động cập nhật kết quả (PASS/FAIL) kèm lỗi chi tiết vào file Excel Backup mà không ảnh hưởng định dạng nguyên bản. |
-| 📁 **`core/utils/`** | Các tiện ích xử lý dữ liệu. | `data.resolver.ts` phân tích các biến động trong ô dữ liệu (ví dụ: lấy giá trị từ cột chỉ định dựa theo bộ dữ liệu/dataset). |
-| 📁 **`controls/`** | Bọc các thẻ HTML thành Đối tượng. | `base.control.ts`, `input.control.ts`, `dropdown.control.ts`... bọc các hành động tương ứng của nút bấm, ô nhập liệu, dropdown để tái sử dụng mã nguồn. |
-| 📁 **`actions/`** | Bộ máy biên dịch Keyword thành hành động. | Đọc các Keyword từ Excel (`navigate`, `click`, `input`, `check_status`) và gọi hàm tương ứng. Lớp này hỗ trợ mở rộng thêm Keyword mới rất dễ dàng. |
-| 📄 **`run.ts`** | Điểm khởi chạy (Entrypoint). | Đọc dữ liệu từ file Excel được cấu hình, chạy kiểm thử và tự động mở trình duyệt hiển thị báo cáo khi hoàn tất. |
+```text
+gui-testing-tool/
+│
+├── framework/                         # THƯ VIỆN CHUẨN (STANDARD LIBRARY - KHÔNG THAY ĐỔI)
+│   ├── run.ts                         # Entry Point khởi chạy toàn bộ framework (đọc Excel, chạy test, sinh báo cáo)
+│   │
+│   ├── core/                          # TRÁI TIM CỦA FRAMEWORK (CORE LAYER)
+│   │   ├── engine/                    # Trình điều khiển chính (Browser, Execution, Excel & Report)
+│   │   │   ├── browser.manager.ts     # Quản lý vòng đời trình duyệt (Browser, Context, Page), tự động bật Headless
+│   │   │   ├── core.runner.ts         # Trình thông dịch kịch bản Excel, điều phối hành động, giải quyết dữ liệu động
+│   │   │   ├── excel/                 # Các tiện ích excel.reader.ts (đọc dữ liệu) & excel.validator.ts (kiểm tra lỗi cấu trúc)
+│   │   │   └── report/                # report.manager.ts (tự động tạo báo cáo HTML, chụp screenshot và ghi kết quả)
+│   │   │
+│   │   ├── drivers/                   # playwright.wrapper.ts (Bọc lại API Playwright để xử lý ngoại lệ, đợi động)
+│   │   └── utils/                     # data.resolver.ts (đọc biến động), update_excel_template.py (định dạng Excel)
+│   │
+│   ├── config/                        # Cấu hình hệ thống (framework.config.ts - Timeout, Viewport, Paths)
+│   │
+│   ├── actions/                       # THƯ VIỆN HÀNH ĐỘNG (KEYWORD LIBRARY)
+│   │   ├── action.dispatcher.ts       # Router điều phối hành động ('click', 'input', 'check_status', 'refresh'...)
+│   │   ├── browser.action.ts          # Thao tác trình duyệt (navigate, refresh, switch_tab)
+│   │   ├── interaction.action.ts      # Thao tác chuột/phím vật lý (click, input, hover, select)
+│   │   └── validation.action.ts       # Thao tác xác thực kết quả (verify_visible, verify_text)
+│   │
+│   └── controls/                      # THƯ VIỆN PHẦN TỬ UI (UI CONTROLS LAYER - UI ELEMENTS PATTERN)
+│       ├── control.factory.ts         # Nhận diện loại phần tử qua Tiền tố (Prefix) của Target Element
+│       ├── base.control.ts            # Lớp Control cơ sở chứa hành vi chung (click, verify_status, hover)
+│       ├── input.control.ts           # Đối tượng TextBoxControl xử lý nhập liệu (tiền tố: txt_, inp_)
+│       ├── dropdown.control.ts        # Đối tượng DropdownControl xử lý hộp chọn (tiền tố: ddl_, select_)
+│       └── checkbox.control.ts        # Đối tượng CheckboxControl xử lý checkbox/radio (tiền tố: chk_, cb_)
+│
+├── test-data/                         # THƯ MỤC CẤU HÌNH NGHIỆP VỤ (CHỈ THAY ĐỔI KHI THAY ĐỔI DỰ ÁN)
+│   └── Master_Test_Suite.xlsx         # File chứa kịch bản, phần tử định vị, trang và dữ liệu kiểm thử
+│
+├── reports/                           # LỊCH SỬ CHẠY THỬ & BẰNG CHỨNG (TỰ ĐỘNG SINH)
+│   └── run_YYYY-MM-DDTHH-MM-SS/       # Thư mục riêng của từng lượt chạy kiểm thử
+│       ├── Execution_Report.html      # Báo cáo HTML trực quan và tự động mở sau khi chạy
+│       ├── Master_Test_Suite_Backup.xlsx # File Excel kết quả kiểm thử dự phòng
+│       └── screenshots/               # Ảnh chụp bằng chứng (evidence) kiểm thử
+│
+├── mock-server/                       # GIAO DIỆN GIẢ LẬP ĐỂ TEST FRAMEWORK
+│   ├── server.js                      # Web server Express phục vụ SPA Routing
+│   └── views/                         # Trang web giả lập (vaccination.html, home.html) tích hợp các phần tử test
+│
+├── package.json                       # Scripts NPM và các thư viện phụ thuộc (Playwright, xlsx-populate, ts-node)
+└── tsconfig.json                      # Cấu hình biên dịch TypeScript
+```
 
 ---
 
