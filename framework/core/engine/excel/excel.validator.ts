@@ -105,7 +105,7 @@ export class ExcelValidator {
                             errors.push(
                                 `[TC: ${tc.tc_id} - Step: ${stepNo}] Tên bệnh viện không hợp lệ!\n` +
                                 `    - Giá trị nhập vào: '${dataVal}'\n` +
-                                `    - Danh sách bệnh viện hợp lệ cấu hình trong DATA_LOGIN:\n` +
+                                `    - Danh sách bệnh viện hợp lệ cấu hình trong DATA:\n` +
                                 validHospitals.map(h => `      + ${h}`).join('\n')
                             );
                         }

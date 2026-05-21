@@ -41,8 +41,12 @@ export class ActionDispatcher {
         const locatorType = elementInfo.locator_type || "";
         let locatorValue = elementInfo.locator || "";
 
-        if (locatorValue.includes('${data}')) {
-            locatorValue = locatorValue.replace(/\$\{data\}/g, actualData);
+        const placeholders = ['data', 'select_hospital'];
+        for (const placeholder of placeholders) {
+            const regex = new RegExp(`\\$\\{${placeholder}\\}`, 'g');
+            if (locatorValue.includes(`\$\{${placeholder}\}`)) {
+                locatorValue = locatorValue.replace(regex, actualData);
+            }
         }
 
         const control = ControlFactory.getControl(targetId, locatorType, locatorValue);

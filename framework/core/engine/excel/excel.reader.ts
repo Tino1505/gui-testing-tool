@@ -1,6 +1,18 @@
 import * as ExcelJS from 'exceljs';
 
 export class ExcelReader {
+    private static getCleanStringValue(val: any): any {
+        if (val && typeof val === 'object') {
+            if ('text' in val) val = (val as any).text;
+            else if ('richText' in val) val = (val as any).richText.map((rt: any) => rt.text).join('');
+            else if ('result' in val) val = (val as any).result; // for formulas
+        }
+        if (typeof val === 'string') {
+            return val.replace(/_x000d_/g, '').trim();
+        }
+        return val?.toString() || val;
+    }
+
     public static async readTestData(filePath: string): Promise<any> {
         const data: any = {
             elements: {},
@@ -22,13 +34,7 @@ export class ExcelReader {
                     if (rowNumber === 1) return;
                     const rowData: any = {};
                     row.eachCell((cell, colNumber) => {
-                        let val = cell.value;
-                        if (val && typeof val === 'object') {
-                            if ('text' in val) val = (val as any).text;
-                            else if ('richText' in val) val = (val as any).richText.map((rt: any) => rt.text).join('');
-                            else if ('result' in val) val = (val as any).result; // for formulas
-                        }
-                        rowData[headers[colNumber]] = val?.toString() || val;
+                        rowData[headers[colNumber]] = ExcelReader.getCleanStringValue(cell.value);
                     });
                     const elementKey = rowData['ElementKey'] || rowData['element_id'];
                     const locatorType = rowData['LocatorType'] || rowData['locator_type'];
@@ -50,13 +56,7 @@ export class ExcelReader {
                     if (rowNumber === 1) return;
                     const rowData: any = {};
                     row.eachCell((cell, colNumber) => {
-                        let val = cell.value;
-                        if (val && typeof val === 'object') {
-                            if ('text' in val) val = (val as any).text;
-                            else if ('richText' in val) val = (val as any).richText.map((rt: any) => rt.text).join('');
-                            else if ('result' in val) val = (val as any).result; // for formulas
-                        }
-                        rowData[headers[colNumber]] = val?.toString() || val;
+                        rowData[headers[colNumber]] = ExcelReader.getCleanStringValue(cell.value);
                     });
                     const pageKey = rowData['PageKey'] || rowData['page'];
                     const url = rowData['URL'] || rowData['url'];
@@ -81,13 +81,7 @@ export class ExcelReader {
 
                         const rowData: any = {};
                         row.eachCell((cell, colNumber) => {
-                            let val = cell.value;
-                            if (val && typeof val === 'object') {
-                                if ('text' in val) val = (val as any).text;
-                                else if ('richText' in val) val = (val as any).richText.map((rt: any) => rt.text).join('');
-                                else if ('result' in val) val = (val as any).result; // for formulas
-                            }
-                            rowData[headers[colNumber]] = val?.toString() || val;
+                            rowData[headers[colNumber]] = ExcelReader.getCleanStringValue(cell.value);
                         });
 
                         const dataset = rowData['DataType'] || rowData['DataSet'] || rowData['test_case_type'];
@@ -130,13 +124,7 @@ export class ExcelReader {
                     const rowData: any = {};
                     let isEmpty = true;
                     row.eachCell((cell, colNumber) => {
-                        let val = cell.value;
-                        if (val && typeof val === 'object') {
-                            if ('text' in val) val = (val as any).text;
-                            else if ('richText' in val) val = (val as any).richText.map((rt: any) => rt.text).join('');
-                            else if ('result' in val) val = (val as any).result; // for formulas
-                        }
-                        rowData[headers[colNumber]] = val?.toString() || val;
+                        rowData[headers[colNumber]] = ExcelReader.getCleanStringValue(cell.value);
                         isEmpty = false;
                     });
 
@@ -176,9 +164,9 @@ export class ExcelReader {
                 });
             });
 
-            // Extract valid hospitals from DATA_LOGIN sheet
+            // Extract valid hospitals from DATA or DATA_LOGIN sheet
             const validHospitals: string[] = [];
-            const dataLoginSheet = workbook.getWorksheet('DATA_LOGIN');
+            const dataLoginSheet = workbook.getWorksheet('DATA') || workbook.getWorksheet('DATA_LOGIN');
             if (dataLoginSheet) {
                 const headers = dataLoginSheet.getRow(1).values as string[];
                 let colIndex = -1;
@@ -192,14 +180,8 @@ export class ExcelReader {
                     dataLoginSheet.eachRow((row, rowNumber) => {
                         if (rowNumber === 1) return;
                         const cell = row.getCell(colIndex);
-                        let val = cell.value;
-                        if (val && typeof val === 'object') {
-                            if ('text' in val) val = (val as any).text;
-                            else if ('richText' in val) val = (val as any).richText.map((rt: any) => rt.text).join('');
-                            else if ('result' in val) val = (val as any).result;
-                        }
-                        const strVal = val?.toString()?.trim();
-                        if (strVal) {
+                        const strVal = ExcelReader.getCleanStringValue(cell.value);
+                        if (strVal && typeof strVal === 'string') {
                             validHospitals.push(strVal);
                         }
                     });

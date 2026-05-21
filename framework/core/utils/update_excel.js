@@ -82,15 +82,35 @@ async function updateExcelFile(fileName) {
         }
     }
 
-    // 3. Update TEST_CASE sheet
-    const wsTc = workbook.sheet("TEST_CASE");
-    if (!wsTc) throw new Error(`Sheet TEST_CASE not found in ${fileName}`);
+    // 3. Update TEST_CASE_LOGIN sheet
+    const wsTcLogin = workbook.sheet("TEST_CASE_LOGIN");
+    if (!wsTcLogin) throw new Error(`Sheet TEST_CASE_LOGIN not found in ${fileName}`);
 
-    let endRowTc = getLastValuedRow(wsTc, [1, 2, 3, 4, 5, 6]);
+    // 4. Update TEST_CASE_VACXIN sheet
+    let wsTcVac = workbook.sheet("TEST_CASE_VACXIN");
+    if (!wsTcVac) {
+        wsTcVac = workbook.addSheet("TEST_CASE_VACXIN");
+        const endCol = wsTcLogin.usedRange().endCell().columnNumber();
+        for (let c = 1; c <= endCol; c++) {
+            wsTcVac.cell(1, c).value(wsTcLogin.cell(1, c).value());
+        }
+    }
+
+    // 5. Update TEST_CASE_LAMSANG sheet
+    let wsTcLamsang = workbook.sheet("TEST_CASE_LAMSANG");
+    if (!wsTcLamsang) {
+        wsTcLamsang = workbook.addSheet("TEST_CASE_LAMSANG");
+        const endCol = wsTcLogin.usedRange().endCell().columnNumber();
+        for (let c = 1; c <= endCol; c++) {
+            wsTcLamsang.cell(1, c).value(wsTcLogin.cell(1, c).value());
+        }
+    }
+
+    let endRowTcVac = getLastValuedRow(wsTcVac, [1, 2, 3, 4, 5, 6]);
 
     const existingTcs = new Set();
-    for (let r = 2; r <= endRowTc; r++) {
-        const val = wsTc.cell(r, 1).value();
+    for (let r = 2; r <= endRowTcVac; r++) {
+        const val = wsTcVac.cell(r, 1).value();
         if (val) existingTcs.add(String(val).trim());
     }
 
@@ -114,14 +134,14 @@ async function updateExcelFile(fileName) {
         ];
 
         for (const rowData of testCasesRows) {
-            endRowTc++;
+            endRowTcVac++;
             for (let c = 1; c <= rowData.length; c++) {
-                wsTc.cell(endRowTc, c).value(rowData[c - 1]);
+                wsTcVac.cell(endRowTcVac, c).value(rowData[c - 1]);
             }
         }
-        console.log("  Added test cases TC_VAC_001, TC_VAC_002, TC_VAC_003 to TEST_CASE sheet.");
+        console.log("  Added test cases TC_VAC_001, TC_VAC_002, TC_VAC_003 to TEST_CASE_VACXIN sheet.");
     } else {
-        console.log("  Test cases already exist in TEST_CASE sheet.");
+        console.log("  Test cases already exist in TEST_CASE_VACXIN sheet.");
     }
 
     await workbook.toFileAsync(filePath);
