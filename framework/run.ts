@@ -11,6 +11,14 @@ async function main() {
     const relativeExcel = path.relative(process.cwd(), excelPath).replace(/\\/g, '/');
     console.log(`Reading Excel data from: ${relativeExcel}...`);
 
+    // Parse arguments for sheet filter
+    let targetSheetFilter: string | null = null;
+    process.argv.forEach(val => {
+        if (val.startsWith('--sheet=')) {
+            targetSheetFilter = val.split('=')[1];
+        }
+    });
+
     const data = await ExcelReader.readTestData(excelPath);
 
     // Validate
@@ -28,7 +36,7 @@ async function main() {
 
     // Run tests
     console.log(`Validation passed. Executing tests...`);
-    const { results, runDir } = await KeywordRunner.runTests(data);
+    const { results, runDir } = await KeywordRunner.runTests(data, targetSheetFilter);
 
     if (results.length > 0) {
         // Generate Report

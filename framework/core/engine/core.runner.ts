@@ -7,7 +7,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 export class KeywordRunner {
-    public static async runTests(data: any): Promise<any> {
+    public static async runTests(data: any, targetSheetFilter: string | null = null): Promise<any> {
         const testCases = data.test_cases || [];
         if (testCases.length === 0) {
             console.log("No test cases found.");
@@ -31,6 +31,18 @@ export class KeywordRunner {
                 if (tc.run !== true && String(tc.run).toUpperCase() !== 'Y') {
                     console.log(`Skipping ${tcId} (run != Y)`);
                     continue;
+                }
+
+                if (targetSheetFilter) {
+                    const upperFilter = targetSheetFilter.toUpperCase();
+                    const upperSheetName = (tc.sheet_name || "").toUpperCase();
+                    const isMatch = upperSheetName === upperFilter || 
+                                    upperSheetName === `TEST_CASE_${upperFilter}` ||
+                                    upperSheetName.endsWith(`_${upperFilter}`) ||
+                                    upperSheetName.endsWith(upperFilter);
+                    if (!isMatch) {
+                        continue;
+                    }
                 }
 
                 const datasetName = tc.dataset;
