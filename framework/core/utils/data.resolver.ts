@@ -12,6 +12,10 @@ export class DataResolver {
                 const colKey = parts[1];
                 if (currentDataRow && currentDataRow[sheetKey] && currentDataRow[sheetKey][colKey] !== undefined) {
                     resolvedValue = String(currentDataRow[sheetKey][colKey]);
+                } else if (currentDataRow && sheetKey === 'data_login' && currentDataRow['data'] && currentDataRow['data'][colKey] !== undefined) {
+                    resolvedValue = String(currentDataRow['data'][colKey]);
+                } else if (currentDataRow && sheetKey === 'data' && currentDataRow['data_login'] && currentDataRow['data_login'][colKey] !== undefined) {
+                    resolvedValue = String(currentDataRow['data_login'][colKey]);
                 }
             } else {
                 const key = parts[0];
