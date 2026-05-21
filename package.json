@@ -5,6 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "ts-node framework/run.ts",
+    "test:all": "ts-node framework/run.ts",
+    "test:login": "ts-node framework/run.ts --sheet=TEST_CASE_LOGIN",
+    "test:vacxin": "ts-node framework/run.ts --sheet=TEST_CASE_VACXIN",
+    "test:lamsang": "ts-node framework/run.ts --sheet=TEST_CASE_LAMSANG",
     "serve": "node mock-server/server.js",
     "update-excel-template": "python framework/core/utils/update_excel_template.py"
   },
