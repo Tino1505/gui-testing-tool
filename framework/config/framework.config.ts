@@ -18,5 +18,14 @@ export const FrameworkConfig = {
     BROWSER: {
         HEADLESS: false, // Default to visible for GUI testing
         VIEWPORT: { width: 1280, height: 720 }
+    },
+
+    // Custom validations (Data integrity rules mapped dynamically)
+    CUSTOM_VALIDATIONS: {
+        'btn_dynamic_select': {
+            type: 'lookup',
+            sourceSheet: 'DATA_LOGIN',
+            sourceColumn: 'select_hospital'
+        }
     }
 };

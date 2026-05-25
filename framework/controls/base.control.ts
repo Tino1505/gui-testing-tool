@@ -13,45 +13,47 @@ export class BaseControl {
         return PlaywrightDriver.getLocator(this.locatorType, this.locatorValue);
     }
 
+    public getInteractableLocator(): Locator {
+        return this.getLocator().filter({ visible: true }).first();
+    }
+
     public async waitForVisible(timeout: number = 10000) {
-        await this.getLocator().waitFor({ state: 'visible', timeout });
+        await this.getInteractableLocator().waitFor({ state: 'visible', timeout });
     }
 
     public async waitForHidden(timeout: number = 10000) {
-        await this.getLocator().waitFor({ state: 'hidden', timeout });
+        await this.getLocator().first().waitFor({ state: 'hidden', timeout });
     }
 
     public async click() {
-        await this.getLocator().click();
+        await this.getInteractableLocator().click();
     }
 
     public async doubleClick() {
-        await this.getLocator().dblclick();
+        await this.getInteractableLocator().dblclick();
     }
 
     public async rightClick() {
-        await this.getLocator().click({ button: 'right' });
+        await this.getInteractableLocator().click({ button: 'right' });
     }
 
     public async clear() {
-        await this.getLocator().clear();
+        await this.getInteractableLocator().clear();
     }
 
     public async focus() {
-        await this.getLocator().focus();
+        await this.getInteractableLocator().focus();
     }
 
     public async dragTo(destination: Locator) {
-        await this.getLocator().dragTo(destination);
+        await this.getInteractableLocator().dragTo(destination);
     }
 
     public async getText(): Promise<string> {
-        return await this.getLocator().innerText();
+        return await this.getInteractableLocator().innerText();
     }
 
     public async isVisible(): Promise<boolean> {
-        return await this.getLocator().isVisible();
+        return await this.getInteractableLocator().isVisible();
     }
-
-
 }

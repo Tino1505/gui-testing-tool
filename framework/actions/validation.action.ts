@@ -48,18 +48,18 @@ export class ValidationAction {
     public static async verifyEnabled(control: BaseControl, targetId: string): Promise<string> {
         try {
             await control.waitForVisible();
-            const isEnabled = await control.getLocator().isEnabled();
+            const isEnabled = await (control as any).getInteractableLocator().isEnabled();
             if (!isEnabled) throw new Error(`Element ${targetId} is disabled but expected to be enabled`);
             return `Verified ${targetId} is enabled`;
         } catch (e: any) {
             throw new Error(`Element ${targetId} is not enabled: ${e.message}`);
         }
     }
-
+ 
     public static async verifyDisabled(control: BaseControl, targetId: string): Promise<string> {
         try {
             await control.waitForVisible();
-            const isDisabled = await control.getLocator().isDisabled();
+            const isDisabled = await (control as any).getInteractableLocator().isDisabled();
             if (!isDisabled) throw new Error(`Element ${targetId} is enabled but expected to be disabled`);
             return `Verified ${targetId} is disabled`;
         } catch (e: any) {
@@ -78,16 +78,16 @@ export class ValidationAction {
 
     public static async verifyValue(control: any, expectedValue: string, targetId: string): Promise<string> {
         await control.waitForVisible();
-        const value = await control.getLocator().inputValue();
+        const value = await control.getInteractableLocator().inputValue();
         if (value !== expectedValue) {
             throw new Error(`Value mismatch. Expected: ${expectedValue}, Actual: ${value}`);
         }
         return `Verified value for ${targetId}`;
     }
-
+ 
     public static async verifyChecked(control: any, expectedState: string, targetId: string): Promise<string> {
         await control.waitForVisible();
-        const isChecked = await control.getLocator().isChecked();
+        const isChecked = await control.getInteractableLocator().isChecked();
         const shouldBeChecked = String(expectedState).toLowerCase() === 'true' || String(expectedState) === '1' || String(expectedState).toLowerCase() === 'checked';
         if (isChecked !== shouldBeChecked) {
             throw new Error(`Checked state mismatch. Expected: ${shouldBeChecked}, Actual: ${isChecked}`);

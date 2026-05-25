@@ -27,24 +27,29 @@ export class ReportManager {
                 .summary .fail { color: #dc3545; }
                 .summary .time { color: #333; }
                 
-                /* Buttons Row */
-                .buttons-row { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; }
-                .btn { padding: 10px 20px; border: none; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 14px; text-decoration: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-                .btn-excel { background-color: #2ecc71; }
-                .btn-html { background-color: #3498db; }
-                .btn-pdf { background-color: #9b59b6; }
+                /* Controls Row */
+                .controls-row { display: flex; justify-content: flex-end; gap: 12px; margin-bottom: 20px; }
+                .btn-outline { background: transparent; color: #34495e; border: 2px solid #34495e; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
+                .btn-outline:hover { background: #34495e; color: white; }
                 
                 /* Test Case Card */
                 .tc-card { background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 25px; overflow: hidden; border: 1px solid #e0e0e0; }
                 
                 /* TC Header */
-                .tc-header { background: #34495e; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 16px; }
+                .tc-header { background: #34495e; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 16px; cursor: pointer; transition: background-color 0.2s; user-select: none; }
+                .tc-header:hover { background-color: #2c3e50; }
                 .badge { padding: 5px 15px; border-radius: 4px; font-size: 14px; font-weight: bold; letter-spacing: 1px; }
                 .badge.pass { background-color: #2ecc71; color: white; }
                 .badge.fail { background-color: #e74c3c; color: white; }
+                .badge.sheet-badge { background-color: rgba(255, 255, 255, 0.15); color: #e9ecef; border: 1px solid rgba(255, 255, 255, 0.3); font-weight: 500; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; margin-right: 8px; }
+                
+                /* Chevron Icon */
+                .chevron-icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.2s ease; margin-right: 10px; flex-shrink: 0; }
+                .tc-card.collapsed .chevron-icon { transform: rotate(-90deg); }
                 
                 /* TC Body */
-                .tc-body { display: flex; padding: 15px; gap: 20px; }
+                .tc-body { display: flex; padding: 15px; gap: 20px; transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out, opacity 0.2s ease-in-out; max-height: 2000px; opacity: 1; overflow: hidden; }
+                .tc-card.collapsed .tc-body { max-height: 0; padding-top: 0; padding-bottom: 0; opacity: 0; pointer-events: none; border-top: none; }
                 
                 /* Steps Table */
                 .steps-container { flex: 1; overflow-x: auto; }
@@ -71,7 +76,12 @@ export class ReportManager {
                 <span class="time">Time: ${new Date().toISOString().replace('T', ' ').substring(0, 19)}</span>
             </div>
             
-
+            <div class="controls-row">
+                <button id="btn-toggle-all" class="btn-outline" onclick="toggleAll()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="14" y1="10" x2="21" y2="3"></line><line x1="10" y1="14" x2="3" y2="21"></line></svg>
+                    Expand All
+                </button>
+            </div>
         `;
 
         for (const tc of results) {
@@ -85,10 +95,18 @@ export class ReportManager {
             }
 
             htmlContent += `
-            <div class="tc-card">
-                <div class="tc-header">
-                    <span>${tc.tc_id}: ${tc.summary}</span>
-                    <span class="badge ${statusClass}">${statusText}</span>
+            <div class="tc-card collapsed">
+                <div class="tc-header" onclick="toggleTestCase(this)">
+                    <div style="display: flex; align-items: center;">
+                        <svg class="chevron-icon" viewBox="0 0 24 24">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                        <span>${tc.tc_id}: ${tc.summary}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="badge sheet-badge">${tc.sheet_name || 'TEST_CASE'}</span>
+                        <span class="badge ${statusClass}">${statusText}</span>
+                    </div>
                 </div>
                 <div class="tc-body">
                     <div class="steps-container">
@@ -99,6 +117,7 @@ export class ReportManager {
                                     <th>Action</th>
                                     <th>Target</th>
                                     <th>Data</th>
+                                    <th>Duration</th>
                                     <th>Status</th>
                                     <th>Message</th>
                                 </tr>
@@ -115,6 +134,7 @@ export class ReportManager {
                                     <td><b>${step.action}</b></td>
                                     <td>${step.target || 'None'}</td>
                                     <td>${step.data || 'None'}</td>
+                                    <td>${step.duration || '0.00s'}</td>
                                     <td class="${stepStatusClass}">${stepStatusText}</td>
                                     <td>${step.message || ''}</td>
                                 </tr>
@@ -135,6 +155,42 @@ export class ReportManager {
         }
 
         htmlContent += `
+            <script>
+                function toggleTestCase(header) {
+                    header.closest('.tc-card').classList.toggle('collapsed');
+                    updateToggleBtnState();
+                }
+                function toggleAll() {
+                    const cards = document.querySelectorAll('.tc-card');
+                    const anyExpanded = Array.from(cards).some(c => !c.classList.contains('collapsed'));
+                    
+                    if (anyExpanded) {
+                        cards.forEach(c => c.classList.add('collapsed'));
+                    } else {
+                        cards.forEach(c => c.classList.remove('collapsed'));
+                    }
+                    updateToggleBtnState();
+                }
+                function updateToggleBtnState() {
+                    const btn = document.getElementById('btn-toggle-all');
+                    if (!btn) return;
+                    const cards = document.querySelectorAll('.tc-card');
+                    const anyExpanded = Array.from(cards).some(c => !c.classList.contains('collapsed'));
+                    
+                    if (anyExpanded) {
+                        btn.innerHTML = \`
+                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 3 21 3 21 16"></polyline><line x1="21" y1="3" x2="3" y2="21"></line></svg>
+                            Collapse All
+                        \`;
+                    } else {
+                        btn.innerHTML = \`
+                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="14" y1="10" x2="21" y2="3"></line><line x1="10" y1="14" x2="3" y2="21"></line></svg>
+                            Expand All
+                        \`;
+                    }
+                }
+                updateToggleBtnState();
+            </script>
         </body>
         </html>
         `;

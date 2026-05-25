@@ -1,3 +1,5 @@
+import { FrameworkConfig } from '../../../config/framework.config';
+
 export class ExcelValidator {
     // Dictionary of all supported actions
     private static readonly VALID_ACTIONS: { [key: string]: { requiresTarget: boolean, requiresData: boolean, allowedPrefixes: string[] } } = {
@@ -99,14 +101,17 @@ export class ExcelValidator {
                 if ((action === 'verify_css' || action === 'verify_attribute') && dataVal && !dataVal.includes(':')) {
                     errors.push(`[TC: ${tc.tc_id} - Step: ${stepNo}] Action '${action}' expects Data in format 'key:value', got '${dataVal}'`);
                 }
-                if (target === 'btn_dynamic_select' && dataVal) {
+                // Run generic custom validation rules if defined in config
+                const customRules = FrameworkConfig.CUSTOM_VALIDATIONS || {};
+                const ruleConfig = customRules[target];
+                if (ruleConfig && ruleConfig.type === 'lookup' && dataVal) {
                     if (!dataVal.startsWith('$')) {
-                        if (!validHospitals.includes(dataVal.trim())) {
+                        const allowedValues = data.custom_lookups?.[target] || [];
+                        if (!allowedValues.includes(dataVal.trim())) {
                             errors.push(
-                                `[TC: ${tc.tc_id} - Step: ${stepNo}] Tên bệnh viện không hợp lệ!\n` +
-                                `    - Giá trị nhập vào: '${dataVal}'\n` +
-                                `    - Danh sách bệnh viện hợp lệ cấu hình trong DATA:\n` +
-                                validHospitals.map(h => `      + ${h}`).join('\n')
+                                `[TC: ${tc.tc_id} - Step: ${stepNo}] Giá trị '${dataVal}' không hợp lệ cho '${target}'!\n` +
+                                `    - Danh sách giá trị hợp lệ trong cấu hình Excel:\n` +
+                                allowedValues.map((v: any) => `      + ${v}`).join('\n')
                             );
                         }
                     }

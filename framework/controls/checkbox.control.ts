@@ -2,14 +2,14 @@ import { BaseControl } from './base.control';
 
 export class CheckboxControl extends BaseControl {
     public async check() {
-        await this.getLocator().check();
+        await this.getInteractableLocator().check();
     }
 
     public async uncheck() {
-        await this.getLocator().uncheck();
+        await this.getInteractableLocator().uncheck();
     }
 
     public async isChecked(): Promise<boolean> {
-        return await this.getLocator().isChecked();
+        return await this.getInteractableLocator().isChecked();
     }
 }

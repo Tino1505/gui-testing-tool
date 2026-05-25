@@ -22,7 +22,7 @@ export class KeywordRunner {
         fs.mkdirSync(screenshotsDir, { recursive: true });
 
         const browserManager = new BrowserManager();
-        const isHeadless = process.env.HEADLESS !== 'false';
+        const isHeadless = process.env.HEADLESS === 'true';
         let page = await browserManager.start(isHeadless);
 
         try {

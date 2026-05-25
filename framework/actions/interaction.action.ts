@@ -12,7 +12,7 @@ export class InteractionAction {
         if (verifyTargetId && verifyTargetId !== '-' && expectedValue && elementsDict) {
             const destInfo = elementsDict[verifyTargetId];
             if (!destInfo) throw new Error(`Verify element '${verifyTargetId}' not found in ELEMENT sheet.`);
-            
+
             const verifyControl = ControlFactory.getControl(verifyTargetId, destInfo.locator_type, destInfo.locator);
             const verifyMsg = await ValidationAction.checkStatus(verifyControl, verifyTargetId, "", expectedValue);
             resultMsg += ` | Auto-verified: ${verifyMsg}`;
@@ -33,13 +33,21 @@ export class InteractionAction {
     }
 
     public static async input(control: any, data: string, targetId: string): Promise<string> {
+        const isDataEmpty = data === undefined || data === null || data === '';
+        if (isDataEmpty) {
+            const visible = await control.isVisible();
+            if (!visible) {
+                console.warn(`[Warning] Element '${targetId}' is hidden and the input data is empty. Skipping interaction.`);
+                return `Skipped input: '${data}' into hidden ${targetId}`;
+            }
+        }
         await control.waitForVisible();
         if (typeof control.clear === 'function' && typeof control.fill === 'function') {
             await control.clear();
             await control.fill(data);
         } else {
             await control.click();
-            await control.getLocator().fill(data);
+            await control.getInteractableLocator().fill(data);
         }
         return `Input: '${data}' into ${targetId}`;
     }
@@ -58,56 +66,56 @@ export class InteractionAction {
 
     public static async blur(control: BaseControl, targetId: string): Promise<string> {
         await control.waitForVisible();
-        await control.getLocator().blur();
+        await control.getInteractableLocator().blur();
         return `Blurred ${targetId}`;
     }
 
     public static async hover(control: any, targetId: string): Promise<string> {
         await control.waitForVisible();
-        await control.getLocator().hover();
+        await control.getInteractableLocator().hover();
         return `Hovered on ${targetId}`;
     }
 
     public static async selectByText(control: any, data: string, targetId: string): Promise<string> {
         await control.waitForVisible();
-        await control.getLocator().selectOption({ label: data });
+        await control.getInteractableLocator().selectOption({ label: data });
         return `Selected '${data}' in ${targetId}`;
     }
 
     public static async selectByValue(control: any, data: string, targetId: string): Promise<string> {
         await control.waitForVisible();
-        await control.getLocator().selectOption({ value: data });
+        await control.getInteractableLocator().selectOption({ value: data });
         return `Selected value '${data}' in ${targetId}`;
     }
 
     public static async check(control: any, targetId: string): Promise<string> {
         await control.waitForVisible();
-        await control.getLocator().check();
+        await control.getInteractableLocator().check();
         return `Checked ${targetId}`;
     }
 
     public static async uncheck(control: any, targetId: string): Promise<string> {
         await control.waitForVisible();
-        await control.getLocator().uncheck();
+        await control.getInteractableLocator().uncheck();
         return `Unchecked ${targetId}`;
     }
 
     public static async uploadFile(control: any, filePath: string, targetId: string): Promise<string> {
         await control.waitForVisible();
-        await control.getLocator().setInputFiles(filePath);
+        await control.getInteractableLocator().setInputFiles(filePath);
         return `Uploaded file to ${targetId}`;
     }
 
     public static async dragDrop(control: BaseControl, destinationControl: BaseControl, targetId: string, destinationId: string): Promise<string> {
         await control.waitForVisible();
         await destinationControl.waitForVisible();
-        await control.dragTo(destinationControl.getLocator());
+        await control.dragTo(destinationControl.getInteractableLocator());
         return `Dragged ${targetId} to ${destinationId}`;
     }
 
     public static async scrollTo(control: any, targetId: string): Promise<string> {
         await control.waitForVisible();
-        await control.getLocator().scrollIntoViewIfNeeded();
+        await control.getInteractableLocator().scrollIntoViewIfNeeded();
         return `Scrolled to ${targetId}`;
     }
 
@@ -115,13 +123,13 @@ export class InteractionAction {
         const coords = String(data).split(',').map(s => parseInt(s.trim(), 10));
         const x = coords[0] || 0;
         const y = coords[1] || 0;
-        await control.getLocator().evaluate((el: HTMLElement, args: {x: number, y: number}) => { el.scrollBy(args.x, args.y); }, {x, y});
+        await control.getInteractableLocator().evaluate((el: HTMLElement, args: { x: number, y: number }) => { el.scrollBy(args.x, args.y); }, { x, y });
         return `Scrolled by (${x}, ${y}) on ${targetId}`;
     }
 
     public static async pressKey(control: any, key: string, targetId: string): Promise<string> {
         await control.waitForVisible();
-        await control.getLocator().press(key);
+        await control.getInteractableLocator().press(key);
         return `Pressed key '${key}' on ${targetId}`;
     }
 }

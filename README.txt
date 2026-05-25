@@ -19,7 +19,7 @@ gui-testing-tool/
 │   │   │   └── report/                # report.manager.ts (tự động tạo báo cáo HTML & Screenshots)
 │   │   │
 │   │   ├── drivers/                   # playwright.wrapper.ts (Bọc lại API Playwright)
-│   │   └── utils/                     # data.resolver.ts (đọc biến động), update_excel_template.py (định dạng Excel)
+│   │   └── utils/                     # data.resolver.ts (đọc biến động), update_excel.js (định dạng Excel)
 │   │
 │   ├── config/                        # Cấu hình dự án (framework.config.ts)
 │   │
@@ -45,11 +45,14 @@ gui-testing-tool/
 
 2. CẤU TRÚC FILE EXCEL (test-data/Master_Test_Suite.xlsx)
 ---------------------------------------------------------
-Kiến trúc Automation Data theo mô hình Keyword-Driven và Data-Driven:
-- [TEST_CASE]: Danh sách Test Case và các bước kịch bản chi tiết.
-- [DATA_*]: Dữ liệu đầu vào cho từng Test Case (Hỗ trợ loop data).
-- [ELEMENT]: Lưu trữ định vị (Locator) của các phần tử trên trang.
+Kiến trúc Automation Data theo mô hình Keyword-Driven và Data-Driven được tổ chức theo từng phân hệ/trang (Page/Module) để dễ dàng quản lý:
 - [PAGE]: Lưu trữ đường dẫn URL các trang web.
+- [ACTION_LIST]: Danh sách các keyword hành động được định nghĩa sẵn.
+- Bộ 3 sheets được sắp xếp liên tiếp theo từng phân hệ (ví dụ: LOGIN, VACXIN, LS_HR, LS_COMP, ...):
+  - [TEST_CASE_<MODULE>]: Danh sách Test Case và các bước kịch bản chi tiết cho phân hệ đó.
+  - [DATA_<MODULE>]: Dữ liệu đầu vào cho phân hệ đó (ví dụ: tên đăng nhập, mật khẩu, thông tin học viên...).
+  - [ELEMENT_<MODULE>]: Lưu trữ định vị (Locator) của các phần tử giao diện thuộc phân hệ đó.
+
 
 3. HƯỚNG DẪN KHỞI CHẠY (QUAN TRỌNG)
 ----------------------------------
@@ -70,7 +73,8 @@ Bước 4: Khởi chạy bộ kiểm thử (Run test):
 
 *(Hệ thống sẽ tự động tìm vào file cấu hình và đọc kịch bản từ `test-data/Master_Test_Suite.xlsx` để chạy)*
 
-5. XEM KẾT QUẢ BÁO CÁO
+
+4. XEM KẾT QUẢ BÁO CÁO
 ----------------------
 Sau khi chạy xong, kết quả được lưu tự động tại thư mục `reports/run_YYYY-MM-DDTHH-MM-SS/`:
 - Execution_Report.html: Báo cáo HTML trực quan, liệt kê chi tiết từng Test Case và dữ liệu tương ứng.
