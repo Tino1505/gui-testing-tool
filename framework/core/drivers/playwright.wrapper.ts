@@ -15,6 +15,7 @@ export class PlaywrightDriver {
         if (!locatorType) locatorType = "";
         locatorType = locatorType.toLowerCase().trim();
 
+        if (locatorType === 'data-testid' || locatorType === 'data-test-id') return this.page.locator(`[data-testid="${locatorValue}"]`);
         if (locatorType === 'id') return this.page.locator(`id=${locatorValue}`);
         if (locatorType === 'css') return this.page.locator(locatorValue);
         if (locatorType === 'xpath') return this.page.locator(`xpath=${locatorValue}`);

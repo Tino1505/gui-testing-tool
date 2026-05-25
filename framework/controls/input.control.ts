@@ -2,15 +2,15 @@ import { BaseControl } from './base.control';
 
 export class TextBoxControl extends BaseControl {
     public async fill(text: string) {
-        await this.getLocator().fill(text);
+        await this.getInteractableLocator().fill(text);
     }
 
     public async clear() {
-        await this.getLocator().clear();
+        await this.getInteractableLocator().clear();
     }
 
     public async type(text: string, delayMs: number = 50) {
-        await this.getLocator().pressSequentially(text, { delay: delayMs });
+        await this.getInteractableLocator().pressSequentially(text, { delay: delayMs });
     }
 
 

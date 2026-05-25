@@ -12,10 +12,17 @@ export class DataResolver {
                 const colKey = parts[1];
                 if (currentDataRow && currentDataRow[sheetKey] && currentDataRow[sheetKey][colKey] !== undefined) {
                     resolvedValue = String(currentDataRow[sheetKey][colKey]);
-                } else if (currentDataRow && sheetKey === 'data_login' && currentDataRow['data'] && currentDataRow['data'][colKey] !== undefined) {
-                    resolvedValue = String(currentDataRow['data'][colKey]);
-                } else if (currentDataRow && sheetKey === 'data' && currentDataRow['data_login'] && currentDataRow['data_login'][colKey] !== undefined) {
-                    resolvedValue = String(currentDataRow['data_login'][colKey]);
+                } else if (currentDataRow) {
+                    // Generic fuzzy sheet matching to avoid project-specific hardcoding
+                    const matchedKey = Object.keys(currentDataRow).find(k => {
+                        const kl = k.toLowerCase();
+                        return kl !== '_flat' && (kl.includes(sheetKey) || sheetKey.includes(kl));
+                    });
+                    if (matchedKey && currentDataRow[matchedKey][colKey] !== undefined) {
+                        resolvedValue = String(currentDataRow[matchedKey][colKey]);
+                    } else if (currentDataRow["_flat"] && currentDataRow["_flat"][colKey] !== undefined) {
+                        resolvedValue = String(currentDataRow["_flat"][colKey]);
+                    }
                 }
             } else {
                 const key = parts[0];
@@ -30,7 +37,7 @@ export class DataResolver {
         }
 
         const lowerVal = resolvedValue.toLowerCase().trim();
-        if (lowerVal === "empty" || lowerVal === "n.a" || resolvedValue === "-") {
+        if (lowerVal === "empty") {
             return "";
         }
 

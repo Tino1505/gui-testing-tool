@@ -41,12 +41,19 @@ export class ActionDispatcher {
         const locatorType = elementInfo.locator_type || "";
         let locatorValue = elementInfo.locator || "";
 
-        const placeholders = ['data', 'select_hospital'];
-        for (const placeholder of placeholders) {
-            const regex = new RegExp(`\\$\\{${placeholder}\\}`, 'g');
-            if (locatorValue.includes(`\$\{${placeholder}\}`)) {
-                locatorValue = locatorValue.replace(regex, actualData);
+        // Resolve dynamic placeholders in locator values using regex matching
+        const placeholderRegex = /\$\{([^}]+)\}/g;
+        let match;
+        while ((match = placeholderRegex.exec(locatorValue)) !== null) {
+            const key = match[1];
+            let replacement = "";
+            if (currentDataRow && currentDataRow["_flat"] && currentDataRow["_flat"][key] !== undefined) {
+                replacement = String(currentDataRow["_flat"][key]);
+            } else {
+                replacement = actualData || "";
             }
+            locatorValue = locatorValue.replace(match[0], replacement);
+            placeholderRegex.lastIndex = 0; // Reset index due to string replacement
         }
 
         const control = ControlFactory.getControl(targetId, locatorType, locatorValue);

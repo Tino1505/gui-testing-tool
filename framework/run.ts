@@ -2,11 +2,12 @@ import { ExcelReader } from './core/engine/excel/excel.reader';
 import { ExcelValidator } from './core/engine/excel/excel.validator';
 import { KeywordRunner } from './core/engine/core.runner';
 import { ReportManager } from './core/engine/report/report.manager';
+import { FrameworkConfig } from './config/framework.config';
 import * as path from 'path';
 import { pathToFileURL } from 'url';
 
 async function main() {
-    const excelPath = path.join(__dirname, '..', 'test-data', 'Master_Test_Suite.xlsx');
+    const excelPath = FrameworkConfig.PATHS.TEST_DATA;
     console.log(`Starting Test Execution...`);
     const relativeExcel = path.relative(process.cwd(), excelPath).replace(/\\/g, '/');
     console.log(`Reading Excel data from: ${relativeExcel}...`);

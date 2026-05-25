@@ -11,7 +11,7 @@ export class ControlFactory {
 
         if (id.startsWith('txt_') || id.startsWith('inp_')) {
             return new TextBoxControl(locatorType, locatorValue);
-        } else if (id.startsWith('chk_') || id.startsWith('cb_') || id.startsWith('rdo_') || id.startsWith('radio_')) {
+        } else if (id.startsWith('chk_') || id.startsWith('cb_') || id.startsWith('rdo_') || id.startsWith('radio_') || id.startsWith('rad_')) {
             return new CheckboxControl(locatorType, locatorValue);
         } else if (id.startsWith('ddl_') || id.startsWith('cbo_') || id.startsWith('select_') || id.startsWith('dropdown_')) {
             return new DropdownControl(locatorType, locatorValue);

@@ -1,4 +1,5 @@
 import * as ExcelJS from 'exceljs';
+import { FrameworkConfig } from '../../../config/framework.config';
 
 export class ExcelReader {
     private static getCleanStringValue(val: any): any {
@@ -26,27 +27,30 @@ export class ExcelReader {
             const workbook = new ExcelJS.Workbook();
             await workbook.xlsx.readFile(filePath);
 
-            // 1. Read ELEMENT
-            const elementSheet = workbook.getWorksheet('ELEMENT');
-            if (elementSheet) {
-                const headers = elementSheet.getRow(1).values as string[];
-                elementSheet.eachRow((row, rowNumber) => {
-                    if (rowNumber === 1) return;
-                    const rowData: any = {};
-                    row.eachCell((cell, colNumber) => {
-                        rowData[headers[colNumber]] = ExcelReader.getCleanStringValue(cell.value);
+            // 1. Read ELEMENT (ELEMENT and ELEMENT_ prefix)
+            workbook.eachSheet((sheet) => {
+                const sheetName = sheet.name.toUpperCase();
+                if (sheetName === 'ELEMENT' || sheetName.startsWith('ELEMENT_')) {
+                    const headers = sheet.getRow(1).values as string[];
+                    sheet.eachRow((row, rowNumber) => {
+                        if (rowNumber === 1) return;
+                        const rowData: any = {};
+                        for (let colNumber = 1; colNumber < headers.length; colNumber++) {
+                            const cellValue = row.getCell(colNumber).value;
+                            rowData[headers[colNumber]] = ExcelReader.getCleanStringValue(cellValue);
+                        }
+                        const elementKey = rowData['ElementKey'] || rowData['element_id'];
+                        const locatorType = rowData['LocatorType'] || rowData['locator_type'];
+                        const locatorValue = rowData['LocatorValue'] || rowData['locator_value'];
+                        if (elementKey) {
+                            data.elements[elementKey] = {
+                                locator: locatorValue,
+                                locator_type: locatorType
+                            };
+                        }
                     });
-                    const elementKey = rowData['ElementKey'] || rowData['element_id'];
-                    const locatorType = rowData['LocatorType'] || rowData['locator_type'];
-                    const locatorValue = rowData['LocatorValue'] || rowData['locator_value'];
-                    if (elementKey) {
-                        data.elements[elementKey] = {
-                            locator: locatorValue,
-                            locator_type: locatorType
-                        };
-                    }
-                });
-            }
+                }
+            });
 
             // 2. Read PAGE
             const pageSheet = workbook.getWorksheet('PAGE');
@@ -55,9 +59,10 @@ export class ExcelReader {
                 pageSheet.eachRow((row, rowNumber) => {
                     if (rowNumber === 1) return;
                     const rowData: any = {};
-                    row.eachCell((cell, colNumber) => {
-                        rowData[headers[colNumber]] = ExcelReader.getCleanStringValue(cell.value);
-                    });
+                    for (let colNumber = 1; colNumber < headers.length; colNumber++) {
+                        const cellValue = row.getCell(colNumber).value;
+                        rowData[headers[colNumber]] = ExcelReader.getCleanStringValue(cellValue);
+                    }
                     const pageKey = rowData['PageKey'] || rowData['page'];
                     const url = rowData['URL'] || rowData['url'];
                     const pageName = rowData['Page Name'] || pageKey;
@@ -80,9 +85,10 @@ export class ExcelReader {
                         if (!row.getCell(1).value) return; // Empty dataset
 
                         const rowData: any = {};
-                        row.eachCell((cell, colNumber) => {
-                            rowData[headers[colNumber]] = ExcelReader.getCleanStringValue(cell.value);
-                        });
+                        for (let colNumber = 1; colNumber < headers.length; colNumber++) {
+                            const cellValue = row.getCell(colNumber).value;
+                            rowData[headers[colNumber]] = ExcelReader.getCleanStringValue(cellValue);
+                        }
 
                         const dataset = rowData['DataType'] || rowData['DataSet'] || rowData['test_case_type'];
                         if (dataset) {
@@ -123,10 +129,13 @@ export class ExcelReader {
 
                     const rowData: any = {};
                     let isEmpty = true;
-                    row.eachCell((cell, colNumber) => {
-                        rowData[headers[colNumber]] = ExcelReader.getCleanStringValue(cell.value);
-                        isEmpty = false;
-                    });
+                    for (let colNumber = 1; colNumber < headers.length; colNumber++) {
+                        const cellValue = row.getCell(colNumber).value;
+                        if (cellValue !== null && cellValue !== undefined && cellValue !== '') {
+                            isEmpty = false;
+                        }
+                        rowData[headers[colNumber]] = ExcelReader.getCleanStringValue(cellValue);
+                    }
 
                     if (isEmpty) return;
 
@@ -164,30 +173,49 @@ export class ExcelReader {
                 });
             });
 
-            // Extract valid hospitals from DATA or DATA_LOGIN sheet
-            const validHospitals: string[] = [];
-            const dataLoginSheet = workbook.getWorksheet('DATA') || workbook.getWorksheet('DATA_LOGIN');
-            if (dataLoginSheet) {
-                const headers = dataLoginSheet.getRow(1).values as string[];
-                let colIndex = -1;
-                for (let i = 1; i < headers.length; i++) {
-                    if (headers[i] === 'select_hospital') {
-                        colIndex = i;
-                        break;
-                    }
-                }
-                if (colIndex !== -1) {
-                    dataLoginSheet.eachRow((row, rowNumber) => {
-                        if (rowNumber === 1) return;
-                        const cell = row.getCell(colIndex);
-                        const strVal = ExcelReader.getCleanStringValue(cell.value);
-                        if (strVal && typeof strVal === 'string') {
-                            validHospitals.push(strVal);
+            // Resolve custom validations lookup datasets from configuration dynamically
+            data.custom_lookups = {};
+            const customRules = FrameworkConfig.CUSTOM_VALIDATIONS || {};
+            for (const [targetKey, rule] of Object.entries(customRules)) {
+                if (rule && (rule as any).type === 'lookup') {
+                    const sourceSheetName = (rule as any).sourceSheet;
+                    const sourceColName = (rule as any).sourceColumn;
+                    const values: string[] = [];
+
+                    workbook.eachSheet((sheet) => {
+                        const sheetNameUpper = sheet.name.toUpperCase();
+                        const sourceSheetUpper = sourceSheetName.toUpperCase();
+                        const isMatch = sheetNameUpper === sourceSheetUpper ||
+                                        sheetNameUpper.startsWith(sourceSheetUpper + '_') ||
+                                        sheetNameUpper.endsWith('_' + sourceSheetUpper) ||
+                                        (sourceSheetUpper === 'DATA' && sheetNameUpper.startsWith('DATA'));
+
+                        if (isMatch) {
+                            const headers = sheet.getRow(1).values as string[];
+                            let colIndex = -1;
+                            for (let i = 1; i < headers.length; i++) {
+                                if (headers[i] === sourceColName) {
+                                    colIndex = i;
+                                    break;
+                                }
+                            }
+                            if (colIndex !== -1) {
+                                sheet.eachRow((row, rowNumber) => {
+                                    if (rowNumber === 1) return;
+                                    const cell = row.getCell(colIndex);
+                                    const strVal = ExcelReader.getCleanStringValue(cell.value);
+                                    if (strVal && typeof strVal === 'string') {
+                                        values.push(strVal);
+                                    }
+                                });
+                            }
                         }
                     });
+                    
+                    data.custom_lookups[targetKey] = Array.from(new Set(values));
                 }
             }
-            data.valid_hospitals = validHospitals;
+            data.valid_hospitals = data.custom_lookups['btn_dynamic_select'] || [];
 
             data.test_cases = Object.values(groupedScenarios);
             return data;
