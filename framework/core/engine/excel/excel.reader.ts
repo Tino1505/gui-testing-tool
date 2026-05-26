@@ -82,7 +82,17 @@ export class ExcelReader {
 
                     sheet.eachRow((row, rowNumber) => {
                         if (rowNumber === 1) return;
-                        if (!row.getCell(1).value) return; // Empty dataset
+                        
+                        // Check if row has any non-empty cell
+                        let isEmpty = true;
+                        for (let colNumber = 1; colNumber < headers.length; colNumber++) {
+                            const val = row.getCell(colNumber).value;
+                            if (val !== null && val !== undefined && val !== '') {
+                                isEmpty = false;
+                                break;
+                            }
+                        }
+                        if (isEmpty) return;
 
                         const rowData: any = {};
                         for (let colNumber = 1; colNumber < headers.length; colNumber++) {
@@ -145,11 +155,18 @@ export class ExcelReader {
                         const datasetVal = rowData['Data'] || rowData['DataType'] || rowData['DataSet'] || rowData['type'];
                         currentDataset = (datasetVal && String(datasetVal).trim()) ? String(datasetVal).trim() : null;
 
+                        const toRunVal = rowData['to_run'] || rowData['to-run'] || rowData['Run'] || rowData['run'];
+                        const toRun = (toRunVal === undefined || toRunVal === null || toRunVal === '') ? true : (String(toRunVal).toUpperCase() === 'Y');
+
+                        const parameterizedVal = rowData['parameterized'] || rowData['parameterize'] || rowData['loop_from_step_1'] || rowData['loop'];
+                        const isParameterized = (parameterizedVal && String(parameterizedVal).trim().toUpperCase() === 'Y');
+
                         if (!groupedScenarios[currentTcId]) {
                             groupedScenarios[currentTcId] = {
                                 tc_id: currentTcId,
                                 summary: rowData['Summary'] || rowData['summary'] || "",
-                                run: true,
+                                run: toRun,
+                                parameterized: isParameterized,
                                 dataset: currentDataset,
                                 sheet_name: tcSheet.name,
                                 steps: []
@@ -216,6 +233,30 @@ export class ExcelReader {
                 }
             }
             data.valid_hospitals = data.custom_lookups['btn_dynamic_select'] || [];
+
+            // Propagate sheet data from the first row to subsequent rows of the same dataset if missing
+            for (const dataset of Object.keys(data.test_data)) {
+                const rows = data.test_data[dataset];
+                if (rows.length > 1) {
+                    const allSheetKeys = new Set<string>();
+                    rows.forEach((r: any) => {
+                        Object.keys(r).forEach(k => {
+                            if (k !== '_flat') allSheetKeys.add(k);
+                        });
+                    });
+                    for (const sheetKey of allSheetKeys) {
+                        let lastValidVal: any = null;
+                        for (let i = 0; i < rows.length; i++) {
+                            if (rows[i][sheetKey]) {
+                                lastValidVal = rows[i][sheetKey];
+                            } else if (lastValidVal) {
+                                rows[i][sheetKey] = lastValidVal;
+                                Object.assign(rows[i]["_flat"], lastValidVal);
+                            }
+                        }
+                    }
+                }
+            }
 
             data.test_cases = Object.values(groupedScenarios);
             return data;

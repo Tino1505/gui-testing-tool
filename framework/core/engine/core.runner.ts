@@ -51,8 +51,23 @@ export class KeywordRunner {
                 if (datasetName && data.test_data[datasetName]) {
                     const datasetRows = data.test_data[datasetName];
                     if (datasetRows && datasetRows.length > 0) {
-                        iterations = datasetRows;
+                        iterations = datasetRows.filter((row: any) => {
+                            const flat = row._flat || {};
+                            const toRunVal = flat['to_run'] ?? flat['t0_run'] ?? flat['to-run'] ?? flat['Run'] ?? flat['run'];
+                            if (toRunVal !== undefined && toRunVal !== null) {
+                                const toRunStr = String(toRunVal).trim().toUpperCase();
+                                if (toRunStr !== '') {
+                                    return toRunStr === 'Y';
+                                }
+                            }
+                            return true; // Default to true if empty or not present
+                        });
                     }
+                }
+
+                if (iterations.length === 0) {
+                    console.log(`Skipping test case ${tcId} (No active iterations found in dataset '${datasetName}')`);
+                    continue;
                 }
 
                 // Check if this test case has a precondition call
@@ -66,11 +81,16 @@ export class KeywordRunner {
                     const iterSuffix = iterations.length > 1 ? `_Iter${i + 1}` : "";
                     const currentTcId = `${tcId}${iterSuffix}`;
 
-                    console.log(`--- Running ${currentTcId}: ${tc.summary} ---`);
+                    const isParameterized = tc.parameterized === true;
+                    console.log(`--- Running ${currentTcId}: ${tc.summary} (Parameterized: ${isParameterized ? 'Yes' : 'No'}) ---`);
 
-                    // Reset browser context for independent test cases to isolate session state
-                    if (!hasPrecondition) {
-                        console.log("  [Session] Resetting browser context for independent/negative test case.");
+                    // Reset browser context for independent test cases or when parameterized is true to isolate session state
+                    const shouldReset = !hasPrecondition || isParameterized;
+                    if (shouldReset) {
+                        const resetReason = !hasPrecondition 
+                            ? "independent/negative test case" 
+                            : "parameterized loop from step 1";
+                        console.log(`  [Session] Resetting browser context for ${resetReason}.`);
                         page = await browserManager.resetContext(isHeadless);
                     }
 
