@@ -1,6 +1,6 @@
 # Hướng dẫn chi tiết: Đẩy mã nguồn lên GitLab công ty & Clone thư mục tùy chỉnh
 
-Tài liệu này hướng dẫn từng bước để đưa mã nguồn `gui-testing-tool` hiện tại của bạn lên thư mục gốc của kho chứa (repository) GitLab công ty tại:
+Tài liệu này hướng dẫn từng bước để đưa mã nguồn `unified-gui-testing-tool` hiện tại của bạn lên thư mục gốc của kho chứa (repository) GitLab công ty tại:
 `https://gitlab.vinsmartfuture.tech/vsf-qtvhyt/qc/ai.git`
 
 > [!NOTE]
@@ -25,9 +25,9 @@ Nếu bạn dùng SSH và đã thêm SSH Key vào GitLab, bạn có thể bỏ q
 ---
 
 ## 🧹 Phần 2: Dọn dẹp thư mục con `ai` dư thừa
-Trong dự án của bạn hiện tại đang có thư mục con `c:\Users\datbt20\Documents\projects\gui-testing-tool\ai` (đây là bản clone cũ bị lồng vào trong). Để tránh lỗi Git, hãy xóa thư mục này trước khi đẩy code chính.
+Trong dự án của bạn hiện tại đang có thư mục con `c:\Users\datbt20\Documents\projects\unified-gui-testing-tool\ai` (đây là bản clone cũ bị lồng vào trong). Để tránh lỗi Git, hãy xóa thư mục này trước khi đẩy code chính.
 
-- **Thao tác:** Xóa hoàn toàn thư mục `ai/` nằm bên trong thư mục `gui-testing-tool`.
+- **Thao tác:** Xóa hoàn toàn thư mục `ai/` nằm bên trong thư mục `unified-gui-testing-tool`.
 
 ---
 
@@ -36,7 +36,7 @@ Trong dự án của bạn hiện tại đang có thư mục con `c:\Users\datbt
 Hãy chọn một trong hai phương án dưới đây dựa trên cấu hình bạn muốn:
 
 ### Phương án A: Dùng SSH (Khuyên dùng - Đã có sẵn cấu hình `gitlab` remote trong máy của bạn)
-Mở Terminal tại thư mục gốc `gui-testing-tool` và chạy các lệnh:
+Mở Terminal tại thư mục gốc `unified-gui-testing-tool` và chạy các lệnh:
 
 ```bash
 # 1. Thêm toàn bộ các thay đổi cục bộ vào git
@@ -50,7 +50,7 @@ git push -u gitlab main --force
 ```
 
 ### Phương án B: Dùng HTTPS (Nếu SSH bị lỗi hoặc chưa thiết lập SSH Key)
-Mở Terminal tại thư mục gốc `gui-testing-tool` và chạy các lệnh:
+Mở Terminal tại thư mục gốc `unified-gui-testing-tool` và chạy các lệnh:
 
 ```bash
 # 1. Chuyển URL của remote gitlab từ SSH sang HTTPS
@@ -71,7 +71,7 @@ git push -u gitlab main --force
 
 ## 🔄 Phần 4: Cách Clone về thư mục tùy chỉnh trong tương lai
 
-Khi bạn hoặc đồng nghiệp muốn clone dự án này từ GitLab về máy nhưng muốn thư mục lưu trữ cục bộ tự động đặt tên là `unified-gui-testing-tool` hoặc `gui-testing-tool` thay vì tên mặc định `ai`, chỉ cần chạy lệnh clone kèm tên thư mục mong muốn ở cuối:
+Khi bạn hoặc đồng nghiệp muốn clone dự án này từ GitLab về máy nhưng muốn thư mục lưu trữ cục bộ tự động đặt tên là `unified-gui-testing-tool` thay vì tên mặc định `ai`, chỉ cần chạy lệnh clone kèm tên thư mục mong muốn ở cuối:
 
 ```bash
 # Clone bằng HTTPS và đổi tên thư mục thành unified-gui-testing-tool

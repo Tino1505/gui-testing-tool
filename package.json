@@ -1,5 +1,5 @@
 {
-  "name": "gui-testing-tool",
+  "name": "unified-gui-testing-tool",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -12,16 +12,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Tino1505/gui-testing-tool.git"
+    "url": "git+https://github.com/Tino1505/unified-gui-testing-tool.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/Tino1505/gui-testing-tool/issues"
+    "url": "https://github.com/Tino1505/unified-gui-testing-tool/issues"
   },
-  "homepage": "https://github.com/Tino1505/gui-testing-tool#readme",
+  "homepage": "https://github.com/Tino1505/unified-gui-testing-tool#readme",
   "dependencies": {
     "exceljs": "^4.4.0",
     "playwright": "^1.60.0",

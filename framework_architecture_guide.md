@@ -28,7 +28,7 @@ graph TD
 Dưới đây là sơ đồ cấu trúc của dự án được sắp xếp hợp lý và giải thích ngắn gọn vai trò của từng thành phần:
 
 ```text
-gui-testing-tool/
+unified-gui-testing-tool/
 ├── framework/                       # LÕI FRAMEWORK (ENGINE) - KHÔNG THAY ĐỔI KHI ĐỔI DỰ ÁN
 │   ├── run.ts                       # Entry Point khởi chạy kiểm thử & xuất báo cáo
 │   │
@@ -87,7 +87,7 @@ npm run test
 
 ## 4. Hướng dẫn sử dụng file Excel
 
-Kịch bản và dữ liệu test được tổ chức khoa học trong [Master_Test_Suite.xlsx](file:///c:/Users/datbt20/Documents/projects/gui-testing-tool/test-data/Master_Test_Suite.xlsx) thông qua 3 nhóm sheet chính:
+Kịch bản và dữ liệu test được tổ chức khoa học trong [Master_Test_Suite.xlsx](file:///c:/Users/datbt20/Documents/projects/unified-gui-testing-tool/test-data/Master_Test_Suite.xlsx) thông qua 3 nhóm sheet chính:
 
 ### 1️⃣ Các sheet cấu hình chung
 
