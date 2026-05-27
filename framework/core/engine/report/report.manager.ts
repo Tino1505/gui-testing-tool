@@ -201,8 +201,8 @@ export class ReportManager {
 
     public static async updateInputExcelWithResults(originalPath: string, results: any[], backupPath: string) {
         try {
-            const workbook = new ExcelJS.Workbook();
-            await workbook.xlsx.readFile(originalPath);
+            const XlsxPopulate = require('xlsx-populate');
+            const workbook = await XlsxPopulate.fromFileAsync(originalPath);
 
             const resultsBySheet: { [key: string]: any[] } = {};
             for (const r of results) {
@@ -213,53 +213,63 @@ export class ReportManager {
 
             for (const sheetName of Object.keys(resultsBySheet)) {
                 const sheetResults = resultsBySheet[sheetName];
-                const tcSheet = workbook.getWorksheet(sheetName);
+                const tcSheet = workbook.sheet(sheetName);
                 if (tcSheet) {
-                    const headers = tcSheet.getRow(1).values as string[];
+                    const headers: string[] = [];
+                    const usedRange = tcSheet.usedRange();
+                    let lastCol = 1;
+                    if (usedRange) {
+                        lastCol = usedRange.endCell().columnNumber();
+                        for (let c = 1; c <= lastCol; c++) {
+                            headers.push(String(tcSheet.cell(1, c).value() || "").trim());
+                        }
+                    }
+
                     const colIndices = {
-                        testResult: headers.findIndex(h => h === '[o]_test_result' || h === 'Run Result'),
-                        observed: headers.findIndex(h => h === '[o]_observed' || h === 'Last Run Date' || h === 'LastRunDate'),
-                        duration: headers.findIndex(h => h === '[o]_duration_(s)'),
-                        screenshot: headers.findIndex(h => h === '[o]_screenshot')
+                        testResult: headers.findIndex(h => h === '[o]_test_result' || h === 'Run Result') + 1,
+                        observed: headers.findIndex(h => h === '[o]_observed' || h === 'Last Run Date' || h === 'LastRunDate') + 1,
+                        duration: headers.findIndex(h => h === '[o]_duration_(s)') + 1,
+                        screenshot: headers.findIndex(h => h === '[o]_screenshot') + 1
                     };
 
                     // Add columns if missing
-                    if (colIndices.testResult === -1) {
-                        colIndices.testResult = headers.length;
-                        tcSheet.getCell(1, colIndices.testResult).value = '[o]_test_result';
+                    if (colIndices.testResult === 0) {
+                        lastCol++;
+                        colIndices.testResult = lastCol;
+                        tcSheet.cell(1, colIndices.testResult).value('[o]_test_result');
                     }
-                    if (colIndices.observed === -1) {
-                        colIndices.observed = headers.length + 1; // offset by 1 because we just added testResult
-                        tcSheet.getCell(1, colIndices.observed).value = '[o]_observed';
+                    if (colIndices.observed === 0) {
+                        lastCol++;
+                        colIndices.observed = lastCol;
+                        tcSheet.cell(1, colIndices.observed).value('[o]_observed');
                     }
 
-                    const tcIdCellIndex = headers.findIndex(h => h === 'TC_ID' || h === 'tc-id');
-                    const stepCellIndex = headers.findIndex(h => h === 'step');
+                    const tcIdCellIndex = headers.findIndex(h => h === 'TC_ID' || h === 'tc-id') + 1;
+                    const stepCellIndex = headers.findIndex(h => h === 'step') + 1;
 
-                    if (tcIdCellIndex !== -1 && stepCellIndex !== -1) {
+                    if (tcIdCellIndex > 0 && stepCellIndex > 0) {
                         // First pass: Clear old results and map rows
                         const tcRowMap: { [key: string]: number } = {};
                         let currentTcId = "";
 
-                        tcSheet.eachRow((row, rowNumber) => {
-                            if (rowNumber === 1) return;
-
+                        const lastRow = usedRange ? usedRange.endCell().rowNumber() : 1;
+                        for (let r = 2; r <= lastRow; r++) {
                             // Clear previous outputs
-                            if (colIndices.testResult > -1) row.getCell(colIndices.testResult).value = null;
-                            if (colIndices.observed > -1) row.getCell(colIndices.observed).value = null;
-                            if (colIndices.duration > -1) row.getCell(colIndices.duration).value = null;
-                            if (colIndices.screenshot > -1) row.getCell(colIndices.screenshot).value = null;
+                            if (colIndices.testResult > 0) tcSheet.cell(r, colIndices.testResult).value(null);
+                            if (colIndices.observed > 0) tcSheet.cell(r, colIndices.observed).value(null);
+                            if (colIndices.duration > 0) tcSheet.cell(r, colIndices.duration).value(null);
+                            if (colIndices.screenshot > 0) tcSheet.cell(r, colIndices.screenshot).value(null);
 
-                            const tcIdVal = row.getCell(tcIdCellIndex).value?.toString().trim();
+                            const tcIdVal = String(tcSheet.cell(r, tcIdCellIndex).value() || "").trim();
                             if (tcIdVal) {
                                 currentTcId = tcIdVal;
                             }
 
-                            const stepVal = row.getCell(stepCellIndex).value?.toString().trim();
+                            const stepVal = String(tcSheet.cell(r, stepCellIndex).value() || "").trim();
                             if (currentTcId && stepVal) {
-                                tcRowMap[`${currentTcId}_${stepVal}`] = rowNumber;
+                                tcRowMap[`${currentTcId}_${stepVal}`] = r;
                             }
-                        });
+                        }
 
                         // Second pass: Write step results directly to their rows
                         for (const r of sheetResults) {
@@ -274,14 +284,12 @@ export class ReportManager {
                             for (const step of r.steps) {
                                 const rowNum = tcRowMap[`${baseTcId}_${step.step}`];
                                 if (rowNum) {
-                                    const row = tcSheet.getRow(rowNum);
-
                                     const appendVal = (colIndex: number, val: string) => {
-                                        if (colIndex > -1) {
-                                            const cell = row.getCell(colIndex);
-                                            const currentVal = cell.value ? cell.value.toString() : "";
-                                            cell.value = currentVal ? `${currentVal}\n${prefix}${val}` : `${prefix}${val}`;
-                                            cell.alignment = { wrapText: true, vertical: 'top' };
+                                        if (colIndex > 0) {
+                                            const cell = tcSheet.cell(rowNum, colIndex);
+                                            const currentVal = cell.value() ? cell.value().toString() : "";
+                                            cell.value(currentVal ? `${currentVal}\n${prefix}${val}` : `${prefix}${val}`);
+                                            cell.style({ wrapText: true, verticalAlignment: 'top' });
                                         }
                                     };
 
@@ -295,12 +303,11 @@ export class ReportManager {
                             if (r.screenshot && r.steps.length > 0) {
                                 const lastStep = r.steps[r.steps.length - 1];
                                 const rowNum = tcRowMap[`${baseTcId}_${lastStep.step}`];
-                                if (rowNum && colIndices.screenshot > -1) {
-                                    const row = tcSheet.getRow(rowNum);
-                                    const cell = row.getCell(colIndices.screenshot);
-                                    const currentVal = cell.value ? cell.value.toString() : "";
-                                    cell.value = currentVal ? `${currentVal}\n${prefix}${r.screenshot}` : `${prefix}${r.screenshot}`;
-                                    cell.alignment = { wrapText: true, vertical: 'top' };
+                                if (rowNum && colIndices.screenshot > 0) {
+                                    const cell = tcSheet.cell(rowNum, colIndices.screenshot);
+                                    const currentVal = cell.value() ? cell.value().toString() : "";
+                                    cell.value(currentVal ? `${currentVal}\n${prefix}${r.screenshot}` : `${prefix}${r.screenshot}`);
+                                    cell.style({ wrapText: true, verticalAlignment: 'top' });
                                 }
                             }
                         }
@@ -308,13 +315,13 @@ export class ReportManager {
                 }
             }
 
-            await workbook.xlsx.writeFile(backupPath);
+            await workbook.toFileAsync(backupPath);
             const relativeBackup = path.relative(process.cwd(), backupPath).replace(/\\/g, '/');
             console.log(`Excel Backup: ${relativeBackup}`);
 
             // Also try to overwrite the original Master_Test_Suite.xlsx
             try {
-                await workbook.xlsx.writeFile(originalPath);
+                await workbook.toFileAsync(originalPath);
                 const relativeOriginal = path.relative(process.cwd(), originalPath).replace(/\\/g, '/');
                 console.log(`Original Excel updated: ${relativeOriginal}`);
             } catch (err) {

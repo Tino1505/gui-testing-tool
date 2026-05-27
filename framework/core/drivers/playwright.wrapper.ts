@@ -17,6 +17,9 @@ export class PlaywrightDriver {
 
         if (locatorType === 'data-testid' || locatorType === 'data-test-id') return this.page.locator(`[data-testid="${locatorValue}"]`);
         if (locatorType === 'id') return this.page.locator(`id=${locatorValue}`);
+        if (locatorType === 'role') return this.page.locator(`role=${locatorValue}`);
+        if (locatorType === 'aria-label') return this.page.locator(`[aria-label="${locatorValue}"]`);
+        if (locatorType === 'text') return this.page.locator(`text=${locatorValue}`);
         if (locatorType === 'css') return this.page.locator(locatorValue);
         if (locatorType === 'xpath') return this.page.locator(`xpath=${locatorValue}`);
         if (locatorType === 'name') return this.page.locator(`[name="${locatorValue}"]`);

@@ -21,11 +21,5 @@ export const FrameworkConfig = {
     },
 
     // Custom validations (Data integrity rules mapped dynamically)
-    CUSTOM_VALIDATIONS: {
-        'btn_dynamic_select': {
-            type: 'lookup',
-            sourceSheet: 'DATA_LOGIN',
-            sourceColumn: 'select_hospital'
-        }
-    }
+    CUSTOM_VALIDATIONS: {}
 };

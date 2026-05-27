@@ -156,7 +156,7 @@ export class ExcelReader {
                         currentDataset = (datasetVal && String(datasetVal).trim()) ? String(datasetVal).trim() : null;
 
                         const toRunVal = rowData['to_run'] || rowData['to-run'] || rowData['Run'] || rowData['run'];
-                        const toRun = (toRunVal === undefined || toRunVal === null || toRunVal === '') ? true : (String(toRunVal).toUpperCase() === 'Y');
+                        const toRun = (toRunVal === undefined || toRunVal === null || String(toRunVal).trim() === '') ? false : (String(toRunVal).trim().toUpperCase() === 'Y');
 
                         const parameterizedVal = rowData['parameterized'] || rowData['parameterize'] || rowData['loop_from_step_1'] || rowData['loop'];
                         const isParameterized = (parameterizedVal && String(parameterizedVal).trim().toUpperCase() === 'Y');

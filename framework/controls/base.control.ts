@@ -17,11 +17,11 @@ export class BaseControl {
         return this.getLocator().filter({ visible: true }).first();
     }
 
-    public async waitForVisible(timeout: number = 10000) {
+    public async waitForVisible(timeout: number = 15000) {
         await this.getInteractableLocator().waitFor({ state: 'visible', timeout });
     }
 
-    public async waitForHidden(timeout: number = 10000) {
+    public async waitForHidden(timeout: number = 15000) {
         await this.getLocator().first().waitFor({ state: 'hidden', timeout });
     }
 

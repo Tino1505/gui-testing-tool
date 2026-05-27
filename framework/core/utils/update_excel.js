@@ -42,7 +42,7 @@ async function updateExcelFile(fileName, extraCustomSheets = {}) {
     workbook.sheets().forEach(sheet => {
         const name = sheet.name();
         if (!standardSheets.has(name)) {
-            const lastRow = getLastValuedRow(sheet, Array.from({length: 20}, (_, i) => i + 1));
+            const lastRow = getLastValuedRow(sheet, Array.from({ length: 20 }, (_, i) => i + 1));
             const range = sheet.usedRange();
             const lastCol = range ? range.endCell().columnNumber() : 1;
             const rows = [];
@@ -96,68 +96,69 @@ async function updateExcelFile(fileName, extraCustomSheets = {}) {
     // 4. Write ACTION_LIST sheet
     const ACTION_HEADERS = ['actions', 'description'];
     const ACTION_ROWS = [
-        ["navigate","Mở URL"],
-        ["go_back","Quay lại trang trước"],
-        ["go_forward","Tiến tới trang tiếp theo"],
-        ["refresh","Reload trang hiện tại"],
-        ["check_status","Kiểm tra trạng thái element theo expect (visible, exists, text, value, enabled, checked…)"],
-        ["click","Click vào element"],
-        ["double_click","Double click vào element"],
-        ["right_click","Click chuột phải vào element"],
-        ["hover","Di chuột lên element"],
-        ["focus","Focus vào element"],
-        ["blur","Rời focus khỏi element"],
-        ["press_key","Nhấn phím (Enter, Tab, Esc…)"],
-        ["input","Nhập text vào field"],
-        ["clear","Xóa text trong field"],
-        ["upload_file","Upload file qua input type=file"],
-        ["drag_drop","Kéo thả element tới target"],
-        ["scroll_to","Scroll tới element"],
-        ["scroll_by","Scroll theo tọa độ (x, y)"],
-        ["select_by_text","Chọn dropdown theo text hiển thị"],
-        ["select_by_value","Chọn dropdown theo value"],
-        ["check","Check checkbox"],
-        ["uncheck","Uncheck checkbox"],
-        ["capture","Chụp màn hình"]
+        ["navigate", "Mở URL"],
+        ["go_back", "Quay lại trang trước"],
+        ["go_forward", "Tiến tới trang tiếp theo"],
+        ["refresh", "Reload trang hiện tại"],
+        ["check_status", "Kiểm tra trạng thái element theo expect (visible, exists, text, value, enabled, checked…)"],
+        ["click", "Click vào element"],
+        ["double_click", "Double click vào element"],
+        ["right_click", "Click chuột phải vào element"],
+        ["hover", "Di chuột lên element"],
+        ["focus", "Focus vào element"],
+        ["blur", "Rời focus khỏi element"],
+        ["press_key", "Nhấn phím (Enter, Tab, Esc…)"],
+        ["input", "Nhập text vào field"],
+        ["clear", "Xóa text trong field"],
+        ["upload_file", "Upload file qua input type=file"],
+        ["drag_drop", "Kéo thả element tới target"],
+        ["scroll_to", "Scroll tới element"],
+        ["scroll_by", "Scroll theo tọa độ (x, y)"],
+        ["select_by_text", "Chọn dropdown theo text hiển thị"],
+        ["select_by_value", "Chọn dropdown theo value"],
+        ["check", "Check checkbox"],
+        ["uncheck", "Uncheck checkbox"],
+        ["capture", "Chụp màn hình"]
     ];
     writeSheetData(workbook, "ACTION_LIST", ACTION_HEADERS, ACTION_ROWS);
 
     // 5. Define standard columns for test cases
-    const TC_HEADERS = ["tc-id","summary","type","step","action","target","value","expected","[o]_observed","[o]_test_result","[o]_screenshot","[o]_duration_(s)"];
+    const TC_HEADERS = ["to_run", "tc-id", "summary", "type", "parameterized", "step", "action", "target", "value", "expected", "[o]_observed", "[o]_test_result", "[o]_screenshot", "[o]_duration_(s)"];
 
     // --- Module 1: LOGIN ---
     const loginTestCases = [
-        ['TC_LOGIN_001', 'Đăng nhập thành công với tài khoản SIT Vinmec', 'pos', '1', 'navigate', 'url_sit_login', null, null],
-        [null, null, null, '2', 'click', 'btn_sit_login', null, null],
-        [null, null, null, '3', 'input', 'txt_username', '$data_login.username', null],
-        [null, null, null, '4', 'input', 'txt_password', '$data_login.password', null],
-        [null, null, null, '5', 'click', 'btn_login', null, null],
-        [null, null, null, '6', 'click', 'btn_dynamic_select', null, null],
-        [null, null, null, '7', 'check_status', 'lbl_dashboard_data', null, 'visible'],
+        ['Y', 'TC_LOGIN_001', 'Đăng nhập thành công với tài khoản SIT Vinmec', 'pos', 'N', '1', 'navigate', 'url_sit_login', null, null],
+        [null, null, null, null, null, '2', 'click', 'btn_sit_login', null, null],
+        [null, null, null, null, null, '3', 'input', 'txt_username', '$data_login.username', null],
+        [null, null, null, null, null, '4', 'input', 'txt_password', '$data_login.password', null],
+        [null, null, null, null, null, '5', 'click', 'btn_login', null, null],
+        [null, null, null, null, null, '6', 'click', 'btn_dynamic_select', 'Bệnh viện Đa khoa Quốc tế Vinmec Times City', null],
+        [null, null, null, null, null, '7', 'check_status', 'lbl_dashboard_data', null, 'visible'],
 
-        ['TC_LOGIN_002', 'Đăng nhập thất bại với tài khoản sai định dạng/mật khẩu', 'neg', '1', 'navigate', 'url_sit_login', null, null],
-        [null, null, null, '2', 'click', 'btn_sit_login', null, null],
-        [null, null, null, '3', 'input', 'txt_username', '$data_login.username', null],
-        [null, null, null, '4', 'input', 'txt_password', '$data_login.password', null],
-        [null, null, null, '5', 'click', 'btn_login', null, null],
-        [null, null, null, '6', 'check_status', 'error_msg', null, 'visible']
+        ['Y', 'TC_LOGIN_002', 'Đăng nhập thất bại với tài khoản sai định dạng/mật khẩu', 'neg', 'Y', '1', 'navigate', 'url_sit_login', null, null],
+        [null, null, null, null, null, '2', 'click', 'btn_sit_login', null, null],
+        [null, null, null, null, null, '3', 'input', 'txt_username', '$data_login.username', null],
+        [null, null, null, null, null, '4', 'input', 'txt_password', '$data_login.password', null],
+        [null, null, null, null, null, '5', 'click', 'btn_login', null, null],
+        [null, null, null, null, null, '6', 'check_status', 'error_msg', null, 'visible']
     ];
     writeSheetData(workbook, "TEST_CASE_LOGIN", TC_HEADERS, loginTestCases);
 
-    const loginDataHeaders = ["test_case_type","username","password","select_hospital"];
+    const loginDataHeaders = ["test_case_type", "username", "password"];
     const loginDataRows = [
-        ["pos", "admin@vinmec.com", "Test@1234", "Bệnh viện Đa khoa Quốc tế Vinmec Hải Phòng"],
-        ["neg", "admin@admin.com", "admin123", "Bệnh viện Đa khoa Quốc tế Vinmec Central Park"],
-        ["neg", "admin@admin.com", "empty", "Bệnh viện Đa khoa Quốc tế Vinmec Đà Nẵng"],
-        [null, null, null, "Bệnh viện Đa khoa Quốc tế Vinmec Nha Trang"],
-        [null, null, null, "Bệnh viện Đa khoa Quốc tế Vinmec Times City"],
-        [null, null, null, "Phòng khám Đa khoa Quốc tế Vinmec Royal City"],
-        ["ds_ls_trainee_pos", "admin@vinmec.com", "Test@1234", "Bệnh viện Đa khoa Quốc tế Vinmec Times City"],
-        ["ds_ls_trainee_neg", "admin@admin.com", "admin123", "Bệnh viện Đa khoa Quốc tế Vinmec Times City"]
+        ["pos", "admin@vinmec.com", "Test@1234"],
+        ["neg", "admin@admin.com", "admin123"],
+        ["neg", "admin@admin.com", "empty"],
+        ["ds_ls_trainee_pos", "admin@vinmec.com", "Test@1234"],
+        ["ds_ls_trainee_neg", "admin@admin.com", "admin123"],
+        ["ds_ep_email_neg", "admin@vinmec.com", "Test@1234"],
+        ["ds_bva_phone_neg", "admin@vinmec.com", "Test@1234"],
+        ["ds_bva_cccd_neg", "admin@vinmec.com", "Test@1234"],
+        ["ds_decision_table", "admin@vinmec.com", "Test@1234"]
     ];
     writeSheetData(workbook, "DATA_LOGIN", loginDataHeaders, loginDataRows);
 
-    const loginElementHeaders = ["element_id","locator_type","locator_value"];
+    const loginElementHeaders = ["element_id", "locator_type", "locator_value"];
     const loginElementRows = [
         ['--- MÀN HÌNH ĐĂNG NHẬP ---', null, null],
         ['btn_sit_login', 'css', 'button.bg-primary'],
@@ -172,21 +173,21 @@ async function updateExcelFile(fileName, extraCustomSheets = {}) {
 
     // --- Module 2: VACXIN ---
     const vacTestCases = [
-        ['TC_VAC_001', 'Kiểm tra giao diện Dashboard Tiêm Chủng', 'pos', '1', 'call_tc', 'TC_LOGIN_001', null, null],
-        [null, null, null, '2', 'navigate', 'url_vinmec_vaccine', null, null],
-        [null, null, null, '3', 'check_status', 'lbl_card_cho_day_cdc', null, 'visible'],
+        ['Y', 'TC_VAC_001', 'Kiểm tra giao diện Dashboard Tiêm Chủng', 'pos', 'N', '1', 'call_tc', 'TC_LOGIN_001', null, null],
+        [null, null, null, null, null, '2', 'navigate', 'url_vinmec_vaccine', null, null],
+        [null, null, null, null, null, '3', 'check_status', 'lbl_card_cho_day_cdc', null, 'visible'],
 
-        ['TC_VAC_002', 'Kiểm tra chuyển hướng menu con 9.1.1 Điều phối tiêm chủng', 'pos', '1', 'call_tc', 'TC_LOGIN_001', null, null],
-        [null, null, null, '2', 'Refresh Precondition', null, null, null],
-        [null, null, null, '3', 'navigate', 'url_vinmec_vaccine', null, null],
-        [null, null, null, '4', 'click', 'lnk_sidebar_dieupboi', null, null],
-        [null, null, null, '5', 'check_status', 'lbl_dieu_phoi_title', null, 'visible'],
+        ['Y', 'TC_VAC_002', 'Kiểm tra chuyển hướng menu con 9.1.1 Điều phối tiêm chủng', 'pos', 'N', '1', 'call_tc', 'TC_LOGIN_001', null, null],
+        [null, null, null, null, null, '2', 'Refresh Precondition', null, null, null],
+        [null, null, null, null, null, '3', 'navigate', 'url_vinmec_vaccine', null, null],
+        [null, null, null, null, null, '4', 'click', 'lnk_sidebar_dieupboi', null, null],
+        [null, null, null, null, null, '5', 'check_status', 'lbl_dieu_phoi_title', null, 'visible'],
 
-        ['TC_VAC_003', 'Kiểm tra nút tương tác Xác nhận tiêm', 'pos', '1', 'call_tc', 'TC_LOGIN_001', null, null],
-        [null, null, null, '2', 'Refresh Precondition', null, null, null],
-        [null, null, null, '3', 'navigate', 'url_vinmec_vaccine', null, null],
-        [null, null, null, '4', 'click', 'btn_xac_nhan_tiem', null, null],
-        [null, null, null, '5', 'check_status', 'lbl_modal_xac_nhan', null, 'visible']
+        ['Y', 'TC_VAC_003', 'Kiểm tra nút tương tác Xác nhận tiêm', 'pos', 'N', '1', 'call_tc', 'TC_LOGIN_001', null, null],
+        [null, null, null, null, null, '2', 'Refresh Precondition', null, null, null],
+        [null, null, null, null, null, '3', 'navigate', 'url_vinmec_vaccine', null, null],
+        [null, null, null, null, null, '4', 'click', 'btn_xac_nhan_tiem', null, null],
+        [null, null, null, null, null, '5', 'check_status', 'lbl_modal_xac_nhan', null, 'visible']
     ];
     writeSheetData(workbook, "TEST_CASE_VACXIN", TC_HEADERS, vacTestCases);
 
@@ -209,48 +210,113 @@ async function updateExcelFile(fileName, extraCustomSheets = {}) {
 
     // --- Module 3: QLHV (renamed from LS_HR) ---
     const hrTestCases = [
-        ['TC_QLHV_001', 'Thêm học viên mới và ghép cặp mentor', 'ds_ls_trainee_pos', '1', 'call_tc', 'TC_LOGIN_001', null, null],
-        [null, null, null, '2', 'navigate', 'url_ls_trainees', null, null],
-        [null, null, null, '3', 'click', 'btn_trainee_add', null, null],
-        [null, null, null, '4', 'input', 'txt_trainee_code', '$data_qlhv.trainee_code', null],
-        [null, null, null, '5', 'click', 'rad_trainee_type', '$data_qlhv.trainee_type', null],
-        [null, null, null, '6', 'input', 'txt_trainee_name', '$data_qlhv.trainee_name', null],
-        [null, null, null, '7', 'input', 'txt_trainee_dob', '$data_qlhv.trainee_dob', null],
-        [null, null, null, '8', 'input', 'txt_trainee_cccd', '$data_qlhv.trainee_cccd', null],
-        [null, null, null, '9', 'click', 'btn_trainee_gender', null, null],
-        [null, null, null, '10', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_gender', null],
-        [null, null, null, '11', 'click', 'btn_trainee_job_group', null, null],
-        [null, null, null, '12', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_job_group', null],
-        [null, null, null, '13', 'click', 'btn_trainee_title', null, null],
-        [null, null, null, '14', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_title', null],
-        [null, null, null, '15', 'input', 'txt_trainee_title_other', '$data_qlhv.trainee_title_other', null],
-        [null, null, null, '16', 'click', 'btn_trainee_degree', null, null],
-        [null, null, null, '17', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_degree', null],
-        [null, null, null, '18', 'click', 'btn_trainee_specialty', null, null],
-        [null, null, null, '19', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_specialty', null],
-        [null, null, null, '20', 'click', 'btn_trainee_workplace', null, null],
-        [null, null, null, '21', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_workplace', null],
-        [null, null, null, '22', 'click', 'btn_trainee_department', null, null],
-        [null, null, null, '23', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_department', null],
-        [null, null, null, '24', 'input', 'txt_trainee_email', '$data_qlhv.trainee_email', null],
-        [null, null, null, '25', 'input', 'txt_trainee_phone', '$data_qlhv.trainee_phone', null],
-        [null, null, null, '26', 'input', 'txt_trainee_tax_code', '$data_qlhv.trainee_tax_code', null],
-        [null, null, null, '27', 'input', 'txt_trainee_account', '$data_qlhv.trainee_account', null],
-        [null, null, null, '28', 'click', 'btn_trainee_bank', null, null],
-        [null, null, null, '29', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_bank', null],
-        [null, null, null, '30', 'click', 'btn_trainee_program', null, null],
-        [null, null, null, '31', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_program', null],
-        [null, null, null, '32', 'click', 'btn_trainee_class', null, null],
-        [null, null, null, '33', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_class', null],
-        [null, null, null, '34', 'click', 'btn_trainee_mentor', null, null],
-        [null, null, null, '35', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_mentor', null],
-        [null, null, null, '36', 'input', 'txt_trainee_school', '$data_qlhv.trainee_school', null],
-        [null, null, null, '37', 'input', 'txt_trainee_start_date', '$data_qlhv.trainee_start_date', null],
-        [null, null, null, '38', 'click', 'btn_trainee_save', null, null],
-        [null, null, null, '39', 'click', 'lnk_menu_coordination', null, null],
-        [null, null, null, '40', 'click', 'lnk_mentor_matching', null, null],
-        [null, null, null, '41', 'click', 'btn_matching_confirm', null, null],
-        [null, null, null, '42', 'check_status', 'lbl_matching_success', null, 'visible']
+        ['Y', 'TC_QLHV_PRE', 'Precondition: Đăng nhập thành công và đi tới trang Quản lý học viên', 'pos', 'N', '1', 'call_tc', 'TC_LOGIN_001', null, null],
+        [null, null, null, null, null, '2', 'navigate', 'url_ls_trainees', null, null],
+
+        ['Y', 'TC_QLHV_001', 'Thêm học viên mới thành công (Đầy đủ thông tin)', 'ds_ls_trainee_pos', 'N', '1', 'call_tc', 'TC_LOGIN_001', null, null],
+        [null, null, null, null, null, '2', 'navigate', 'url_ls_trainees', null, null],
+        [null, null, null, null, null, '3', 'click', 'btn_trainee_add', null, null],
+        [null, null, null, null, null, '4', 'click', 'rad_trainee_type', '$data_qlhv.trainee_type', null],
+        [null, null, null, null, null, '5', 'input', 'txt_trainee_code', '$data_qlhv.trainee_code', null],
+        [null, null, null, null, null, '6', 'input', 'txt_trainee_name', '$data_qlhv.trainee_name', null],
+        [null, null, null, null, null, '7', 'click', 'ddl_trainee_role', null, null],
+        [null, null, null, null, null, '8', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_job_group', null],
+        [null, null, null, null, null, '9', 'click', 'ddl_trainee_program', null, null],
+        [null, null, null, null, null, '10', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_program', null],
+        [null, null, null, null, null, '11', 'click', 'ddl_trainee_class', null, null],
+        [null, null, null, null, null, '12', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_class', null],
+        [null, null, null, null, null, '13', 'input', 'txt_trainee_email', '$data_qlhv.trainee_email', null],
+        [null, null, null, null, null, '14', 'input', 'txt_trainee_phone', '$data_qlhv.trainee_phone', null],
+        [null, null, null, null, null, '15', 'click', 'btn_trainee_save', null, null],
+        [null, null, null, null, null, '16', 'check_status', 'lbl_toast_success', null, 'visible'],
+
+        ['Y', 'TC_QLHV_002', 'Thêm học viên mới thất bại (Để trống trường bắt buộc)', 'ds_ls_trainee_neg', 'N', '1', 'call_tc', 'TC_LOGIN_001', null, null],
+        [null, null, null, null, null, '2', 'navigate', 'url_ls_trainees', null, null],
+        [null, null, null, null, null, '3', 'click', 'btn_trainee_add', null, null],
+        [null, null, null, null, null, '4', 'click', 'btn_trainee_save', null, null],
+        [null, null, null, null, null, '5', 'check_status', 'lbl_toast_error', null, 'visible'],
+
+        ['Y', 'TC_QLHV_003', 'Equivalence Partitioning: Kiểm tra Email sai định dạng', 'ds_ep_email_neg', 'Y', '1', 'call_tc', 'TC_LOGIN_001', null, null],
+        [null, null, null, null, null, '2', 'navigate', 'url_ls_trainees', null, null],
+        [null, null, null, null, null, '3', 'click', 'btn_trainee_add', null, null],
+        [null, null, null, null, null, '4', 'click', 'rad_trainee_type', '$data_qlhv.trainee_type', null],
+        [null, null, null, null, null, '5', 'input', 'txt_trainee_code', '$data_qlhv.trainee_code', null],
+        [null, null, null, null, null, '6', 'input', 'txt_trainee_name', '$data_qlhv.trainee_name', null],
+        [null, null, null, null, null, '7', 'click', 'ddl_trainee_role', null, null],
+        [null, null, null, null, null, '8', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_job_group', null],
+        [null, null, null, null, null, '9', 'click', 'ddl_trainee_program', null, null],
+        [null, null, null, null, null, '10', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_program', null],
+        [null, null, null, null, null, '11', 'click', 'ddl_trainee_class', null, null],
+        [null, null, null, null, null, '12', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_class', null],
+        [null, null, null, null, null, '13', 'input', 'txt_trainee_email', '$data_qlhv.trainee_email', null],
+        [null, null, null, null, null, '14', 'click', 'btn_trainee_save', null, null],
+        [null, null, null, null, null, '15', 'check_status', 'lbl_toast_error', null, 'visible'],
+
+        ['Y', 'TC_QLHV_004', 'Boundary Value Analysis: Kiểm tra Số điện thoại sai độ dài', 'ds_bva_phone_neg', 'Y', '1', 'call_tc', 'TC_LOGIN_001', null, null],
+        [null, null, null, null, null, '2', 'navigate', 'url_ls_trainees', null, null],
+        [null, null, null, null, null, '3', 'click', 'btn_trainee_add', null, null],
+        [null, null, null, null, null, '4', 'click', 'rad_trainee_type', '$data_qlhv.trainee_type', null],
+        [null, null, null, null, null, '5', 'input', 'txt_trainee_code', '$data_qlhv.trainee_code', null],
+        [null, null, null, null, null, '6', 'input', 'txt_trainee_name', '$data_qlhv.trainee_name', null],
+        [null, null, null, null, null, '7', 'click', 'ddl_trainee_role', null, null],
+        [null, null, null, null, null, '8', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_job_group', null],
+        [null, null, null, null, null, '9', 'click', 'ddl_trainee_program', null, null],
+        [null, null, null, null, null, '10', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_program', null],
+        [null, null, null, null, null, '11', 'click', 'ddl_trainee_class', null, null],
+        [null, null, null, null, null, '12', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_class', null],
+        [null, null, null, null, null, '13', 'input', 'txt_trainee_phone', '$data_qlhv.trainee_phone', null],
+        [null, null, null, null, null, '14', 'click', 'btn_trainee_save', null, null],
+        [null, null, null, null, null, '15', 'check_status', 'lbl_toast_error', null, 'visible'],
+
+        ['Y', 'TC_QLHV_005', 'Boundary Value Analysis: Kiểm tra CCCD sai độ dài', 'ds_bva_cccd_neg', 'Y', '1', 'call_tc', 'TC_LOGIN_001', null, null],
+        [null, null, null, null, null, '2', 'navigate', 'url_ls_trainees', null, null],
+        [null, null, null, null, null, '3', 'click', 'btn_trainee_add', null, null],
+        [null, null, null, null, null, '4', 'click', 'rad_trainee_type', '$data_qlhv.trainee_type', null],
+        [null, null, null, null, null, '5', 'input', 'txt_trainee_code', '$data_qlhv.trainee_code', null],
+        [null, null, null, null, null, '6', 'input', 'txt_trainee_name', '$data_qlhv.trainee_name', null],
+        [null, null, null, null, null, '7', 'click', 'ddl_trainee_role', null, null],
+        [null, null, null, null, null, '8', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_job_group', null],
+        [null, null, null, null, null, '9', 'click', 'ddl_trainee_program', null, null],
+        [null, null, null, null, null, '10', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_program', null],
+        [null, null, null, null, null, '11', 'click', 'ddl_trainee_class', null, null],
+        [null, null, null, null, null, '12', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_class', null],
+        [null, null, null, null, null, '13', 'input', 'txt_trainee_cccd', '$data_qlhv.trainee_cccd', null],
+        [null, null, null, null, null, '14', 'click', 'btn_trainee_save', null, null],
+        [null, null, null, null, null, '15', 'check_status', 'lbl_toast_error', null, 'visible'],
+
+        ['Y', 'TC_QLHV_006', 'Decision Table Testing: Phân loại học viên vs Mã nhân viên bắt buộc (Positive)', 'dt_pos', 'Y', '1', 'call_tc', 'TC_LOGIN_001', null, null],
+        [null, null, null, null, null, '2', 'navigate', 'url_ls_trainees', null, null],
+        [null, null, null, null, null, '3', 'click', 'btn_trainee_add', null, null],
+        [null, null, null, null, null, '4', 'click', 'rad_trainee_type', '$data_qlhv.trainee_type', null],
+        [null, null, null, null, null, '5', 'input', 'txt_trainee_code', '$data_qlhv.trainee_code', null],
+        [null, null, null, null, null, '6', 'input', 'txt_trainee_name', '$data_qlhv.trainee_name', null],
+        [null, null, null, null, null, '7', 'click', 'ddl_trainee_role', null, null],
+        [null, null, null, null, null, '8', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_job_group', null],
+        [null, null, null, null, null, '9', 'click', 'ddl_trainee_program', null, null],
+        [null, null, null, null, null, '10', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_program', null],
+        [null, null, null, null, null, '11', 'click', 'ddl_trainee_class', null, null],
+        [null, null, null, null, null, '12', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_class', null],
+        [null, null, null, null, null, '13', 'input', 'txt_trainee_email', '$data_qlhv.trainee_email', null],
+        [null, null, null, null, null, '14', 'input', 'txt_trainee_phone', '$data_qlhv.trainee_phone', null],
+        [null, null, null, null, null, '15', 'click', 'btn_trainee_save', null, null],
+        [null, null, null, null, null, '16', 'check_status', 'lbl_toast_success', null, '$data_qlhv.expected_success'],
+
+        ['Y', 'TC_QLHV_007', 'Decision Table Testing: Phân loại học viên vs Mã nhân viên bắt buộc (Negative)', 'dt_neg', 'Y', '1', 'call_tc', 'TC_LOGIN_001', null, null],
+        [null, null, null, null, null, '2', 'navigate', 'url_ls_trainees', null, null],
+        [null, null, null, null, null, '3', 'click', 'btn_trainee_add', null, null],
+        [null, null, null, null, null, '4', 'click', 'rad_trainee_type', '$data_qlhv.trainee_type', null],
+        [null, null, null, null, null, '5', 'input', 'txt_trainee_code', '$data_qlhv.trainee_code', null],
+        [null, null, null, null, null, '6', 'input', 'txt_trainee_name', '$data_qlhv.trainee_name', null],
+        [null, null, null, null, null, '7', 'click', 'ddl_trainee_role', null, null],
+        [null, null, null, null, null, '8', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_job_group', null],
+        [null, null, null, null, null, '9', 'click', 'ddl_trainee_program', null, null],
+        [null, null, null, null, null, '10', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_program', null],
+        [null, null, null, null, null, '11', 'click', 'ddl_trainee_class', null, null],
+        [null, null, null, null, null, '12', 'click', 'opt_dropdown_item', '$data_qlhv.trainee_class', null],
+        [null, null, null, null, null, '13', 'input', 'txt_trainee_email', '$data_qlhv.trainee_email', null],
+        [null, null, null, null, null, '14', 'input', 'txt_trainee_phone', '$data_qlhv.trainee_phone', null],
+        [null, null, null, null, null, '15', 'click', 'btn_trainee_save', null, null],
+        [null, null, null, null, null, '16', 'check_status', 'lbl_toast_error', null, '$data_qlhv.expected_error']
     ];
     writeSheetData(workbook, "TEST_CASE_QLHV", TC_HEADERS, hrTestCases);
 
@@ -260,63 +326,148 @@ async function updateExcelFile(fileName, extraCustomSheets = {}) {
         'trainee_degree', 'trainee_specialty', 'trainee_workplace', 'trainee_department',
         'trainee_email', 'trainee_phone', 'trainee_type', 'trainee_tax_code', 'trainee_account',
         'trainee_bank', 'trainee_program', 'trainee_class', 'trainee_mentor', 'trainee_school',
-        'trainee_start_date'
+        'trainee_start_date', 'expected_error', 'expected_success'
     ];
     const hrDataRows = [
         [
-            'ds_ls_trainee_pos', 'NV-12345', 'Nguyễn Văn A', '1995-05-15', '001095012345',
+            'ds_ls_trainee_pos', '', 'Nguyễn Văn A', '1995-05-15', '001095012345',
             'Nam', 'Bác sĩ', 'Bác sĩ', '',
             'Thạc sĩ', 'Nội khoa', 'Vinmec Times City', 'Khoa Cấp cứu',
             'test.student@vinmec.com', '0987654321', 'Bên ngoài', '8091234567', '19033333333333',
-            'Techcombank', 'Đào tạo Cấp cứu Cơ bản', 'Lớp Cấp cứu 2026-A', 'Trần Thị B', 'Đại học Y Hà Nội',
-            '2026-06-01'
+            'Techcombank', 'An Toàn người bệnh', 'Học mổ', 'Trần Thị B', 'Đại học Y Hà Nội',
+            '2026-06-01', '', ''
         ],
         [
-            'ds_ls_trainee_neg', 'NV-ERROR', 'Lỗi Tên', '1990-01-01', '000000000000',
+            'ds_ls_trainee_neg', '', 'Lỗi Tên', '1990-01-01', '000000000000',
             'Nữ', 'Bác sĩ', 'Bác sĩ', '',
             'Đại học', 'Nội khoa', 'Vinmec Times City', 'Khoa Cấp cứu',
             'error.email', '0000000000', 'Bên ngoài', '', '',
             '', '', '', '', '',
-            '', ''
+            '', '', '', ''
+        ],
+        [
+            'ds_ep_email_neg', '', 'Nguyễn Văn EP', '1995-05-15', '',
+            '', 'Bác sĩ', '', '',
+            '', '', '', '',
+            'test.student', '0987654321', 'Bên ngoài', '', '',
+            '', 'An Toàn người bệnh', 'Lớp học xóa mù SMH', '', '',
+            '', '', ''
+        ],
+        [
+            'ds_ep_email_neg', '', 'Nguyễn Văn EP', '1995-05-15', '',
+            '', 'Bác sĩ', '', '',
+            '', '', '', '',
+            'test.student@', '0987654321', 'Bên ngoài', '', '',
+            '', 'An Toàn người bệnh', 'Lớp học xóa mù SMH', '', '',
+            '', '', ''
+        ],
+        [
+            'ds_ep_email_neg', '', 'Nguyễn Văn EP', '1995-05-15', '',
+            '', 'Bác sĩ', '', '',
+            '', '', '', '',
+            '@vinmec.com', '0987654321', 'Bên ngoài', '', '',
+            '', 'An Toàn người bệnh', 'Lớp học xóa mù SMH', '', '',
+            '', '', ''
+        ],
+        [
+            'ds_bva_phone_neg', '', 'Nguyễn Văn BVA', '1995-05-15', '',
+            '', 'Bác sĩ', '', '',
+            '', '', '', '',
+            'test.student@vinmec.com', '098765432', 'Bên ngoài', '', '',
+            '', 'An Toàn người bệnh', 'Lớp học xóa mù SMH', '', '',
+            '', '', ''
+        ],
+        [
+            'ds_bva_phone_neg', '', 'Nguyễn Văn BVA', '1995-05-15', '',
+            '', 'Bác sĩ', '', '',
+            '', '', '', '',
+            'test.student@vinmec.com', '09876543210', 'Bên ngoài', '', '',
+            '', 'An Toàn người bệnh', 'Lớp học xóa mù SMH', '', '',
+            '', '', ''
+        ],
+        [
+            'ds_bva_phone_neg', '', 'Nguyễn Văn BVA', '1995-05-15', '',
+            '', 'Bác sĩ', '', '',
+            '', '', '', '',
+            'test.student@vinmec.com', '09876543ab', 'Bên ngoài', '', '',
+            '', 'An Toàn người bệnh', 'Lớp học xóa mù SMH', '', '',
+            '', '', ''
+        ],
+        [
+            'ds_bva_cccd_neg', '', 'Nguyễn Văn CCCD', '1995-05-15', '00109501234',
+            '', 'Bác sĩ', '', '',
+            '', '', '', '',
+            'test.student@vinmec.com', '0987654321', 'Bên ngoài', '', '',
+            '', 'An Toàn người bệnh', 'Lớp học xóa mù SMH', '', '',
+            '', '', ''
+        ],
+        [
+            'ds_bva_cccd_neg', '', 'Nguyễn Văn CCCD', '1995-05-15', '0010950123456',
+            '', 'Bác sĩ', '', '',
+            '', '', '', '',
+            'test.student@vinmec.com', '0987654321', 'Bên ngoài', '', '',
+            '', 'An Toàn người bệnh', 'Lớp học xóa mù SMH', '', '',
+            '', '', ''
+        ],
+        [
+            'dt_pos', '', 'Nguyễn Văn DT', '1995-05-15', '',
+            '', 'Bác sĩ', '', '',
+            '', '', '', '',
+            'test.student@vinmec.com', '0987654321', 'Nội bộ', '', '',
+            '', 'An Toàn người bệnh', 'Học mổ', '', '',
+            '', 'visible', 'hidden'
+        ],
+        [
+            'dt_neg', '', 'Nguyễn Văn DT', '1995-05-15', '',
+            '', 'Bác sĩ', '', '',
+            '', '', '', '',
+            'test.student@vinmec.com', '0987654321', 'Bên ngoài', '', '',
+            '', 'An Toàn người bệnh', 'Học mổ', '', '',
+            '', 'hidden', 'visible'
         ]
     ];
     writeSheetData(workbook, "DATA_QLHV", hrDataHeaders, hrDataRows);
 
     const hrElementRows = [
-        ['--- MÀN HÌNH ĐÀO TẠO LÂM SÀNG - ĐIỀU HƯỚNG ---', null, null],
-        ['lnk_menu_coordination', 'xpath', '//span[contains(text(), \'13.4 Điều phối\')]'],
-        ['lnk_mentor_matching', 'xpath', '//*[contains(text(), \'13.4.3\')]'],
-        ['lnk_clinical_logbook', 'xpath', '//*[contains(text(), \'13.5.2\')]'],
+        ['--- MÀN HÌNH ĐẠO TẠO LÂM SÀNG - ĐIỀU HƯỚNG ---', null, null],
+        ['lnk_menu_coordination', 'css', 'span:has-text("13.4 Điều phối")'],
+        ['lnk_mentor_matching', 'css', 'a[href*="mentor-matching"]'],
+        ['lnk_clinical_logbook', 'css', 'a[href*="clinical-logbook"]'],
         ['--- MÀN HÌNH QUẢN LÝ HỌC VIÊN ---', null, null],
-        ['btn_trainee_add', 'xpath', '//button[contains(., \'Thêm học viên\') or contains(., \'Thêm Học viên\')]'],
-        ['txt_trainee_code', 'xpath', '//div[label[contains(., \'Mã nhân viên\')]]//input'],
-        ['txt_trainee_name', 'css', '[data-testid="training-trainees-upsert-name-input"]'],
-        ['txt_trainee_dob', 'xpath', '//div[label[contains(., \'Ngày sinh\')]]//input'],
-        ['txt_trainee_cccd', 'xpath', '//div[label[contains(., \'CCCD\')]]//input'],
-        ['btn_trainee_gender', 'xpath', '//div[label[contains(., \'Giới tính\')]]//button'],
-        ['btn_trainee_job_group', 'xpath', '//div[label[contains(., \'Nhóm nghề\')]]//button'],
-        ['btn_trainee_title', 'xpath', '//div[label[contains(., \'Chức danh\')]]//button'],
-        ['txt_trainee_title_other', 'xpath', '//div[label[contains(., \'Chức danh khác\')]]//input'],
-        ['btn_trainee_degree', 'xpath', '//div[label[contains(., \'Bằng cấp\')]]//button'],
-        ['btn_trainee_specialty', 'xpath', '//div[label[contains(., \'Chuyên ngành\')]]//button'],
-        ['btn_trainee_workplace', 'xpath', '//div[label[contains(., \'Đơn vị công tác\')]]//button'],
-        ['btn_trainee_department', 'xpath', '//div[label[contains(., \'Khoa / phòng\')]]//button'],
-        ['txt_trainee_email', 'xpath', '//div[label[contains(., \'Thư điện tử\')]]//input'],
-        ['txt_trainee_phone', 'xpath', '//div[label[contains(., \'Số điện thoại\')]]//input'],
-        ['rad_trainee_type', 'xpath', '//label[contains(., \'${data}\')]'],
-        ['txt_trainee_tax_code', 'xpath', '//div[label[contains(., \'Mã số thuế\')]]//input'],
-        ['txt_trainee_account', 'xpath', '//div[label[contains(., \'Số tài khoản\')]]//input'],
-        ['btn_trainee_bank', 'xpath', '//div[label[contains(., \'Ngân hàng\')]]//button'],
-        ['btn_trainee_program', 'xpath', '//div[label[contains(., \'Chương trình đào tạo\')]]//button'],
-        ['btn_trainee_class', 'xpath', '//div[label[contains(., \'Lớp đào tạo\')]]//button'],
-        ['btn_trainee_mentor', 'xpath', '//div[label[contains(., \'Người hướng dẫn\')]]//button'],
-        ['txt_trainee_school', 'xpath', '//div[label[contains(., \'Trường đào tạo\')]]//input'],
-        ['txt_trainee_start_date', 'xpath', '//div[label[contains(., \'Ngày bắt đầu\')]]//input'],
-        ['btn_trainee_save', 'xpath', '//button[text()=\'Lưu Học viên\']'],
-        ['opt_dropdown_item', 'xpath', '//div[@role=\'option\' and contains(., \'${data}\')]'],
+        ['btn_trainee_add', 'data-testid', 'training-trainees-add-button'],
+        ['txt_trainee_code', 'data-testid', 'training-trainees-upsert-employee-id-input'],
+        ['txt_trainee_name', 'data-testid', 'training-trainees-upsert-name-input'],
+        ['txt_trainee_dob', 'data-testid', 'training-trainees-upsert-dob-input'],
+        ['txt_trainee_cccd', 'data-testid', 'training-trainees-upsert-cccd-input'],
+        ['ddl_trainee_gender', 'data-testid', 'training-trainees-upsert-gender-select'],
+        ['ddl_trainee_role', 'data-testid', 'training-trainees-upsert-profession-select'],
+        ['ddl_trainee_title', 'data-testid', 'training-trainees-upsert-position-select'],
+        ['txt_trainee_title_other', 'data-testid', 'training-trainees-upsert-job-title-other-input'],
+        ['ddl_trainee_degree', 'data-testid', 'training-trainees-upsert-degree-select'],
+        ['ddl_trainee_specialty', 'data-testid', 'training-trainees-upsert-specialty-select'],
+        ['ddl_trainee_workplace', 'data-testid', 'training-trainees-upsert-hospital-select'],
+        ['ddl_trainee_department', 'data-testid', 'training-trainees-upsert-department-select'],
+        ['txt_trainee_email', 'data-testid', 'training-trainees-upsert-email-input'],
+        ['txt_trainee_phone', 'data-testid', 'training-trainees-upsert-phone-input'],
+        ['rad_trainee_type', 'css', 'label:has-text("${data}")'],
+        ['txt_trainee_tax_code', 'data-testid', 'training-trainees-upsert-tax-code-input'],
+        ['txt_trainee_account', 'data-testid', 'training-trainees-upsert-bank-account-input'],
+        ['ddl_trainee_bank', 'data-testid', 'training-trainees-upsert-bank-select'],
+        ['ddl_trainee_program', 'data-testid', 'training-trainees-upsert-program-select'],
+        ['ddl_trainee_class', 'data-testid', 'training-trainees-upsert-class-select'],
+        ['ddl_trainee_mentor', 'data-testid', 'training-trainees-upsert-mentor-select'],
+        ['txt_trainee_school', 'data-testid', 'training-trainees-upsert-university-input'],
+        ['txt_trainee_start_date', 'data-testid', 'training-trainees-upsert-start-date-input'],
+        ['btn_trainee_save', 'data-testid', 'training-trainees-upsert-submit-button'],
+        ['btn_trainee_cancel', 'data-testid', 'training-trainees-upsert-cancel-button'],
+        ['opt_dropdown_item', 'css', '[role="option"]:has-text("${data}")'],
+        ['lbl_toast_success', 'css', '[data-sonner-toast][data-type=\'success\']'],
+        ['lbl_toast_error', 'css', '[data-sonner-toast][data-type=\'error\']'],
+        ['lbl_validation_error', 'css', '.text-destructive'],
+
         ['--- MÀN HÌNH GHÉP CẶP MENTOR ---', null, null],
-        ['btn_matching_confirm', 'xpath', '//button[contains(., \'Xác nhận ghép cặp\')]'],
-        ['lbl_matching_success', 'xpath', '//*[contains(text(), \'Ghép cặp thành công\') or contains(text(), \'Thành công\')]']
+        ['btn_matching_confirm', 'role', 'button[name="Xác nhận ghép cặp"]'],
+        ['lbl_matching_success', 'text', 'Ghép cặp thành công']
     ];
     writeSheetData(workbook, "ELEMENT_QLHV", loginElementHeaders, hrElementRows);
 
@@ -337,8 +488,8 @@ async function updateExcelFile(fileName, extraCustomSheets = {}) {
 
     // 8. Style headers and freeze first row for all sheets
     workbook.sheets().forEach(sheet => {
-        sheet.freezePanes(0, 1);
-        
+        sheet.freezePanes('A2');
+
         const range = sheet.usedRange();
         if (range) {
             const endCol = range.endCell().columnNumber();
@@ -390,7 +541,7 @@ async function main() {
             workbook.sheets().forEach(sheet => {
                 const name = sheet.name();
                 if (!standardSheets.has(name)) {
-                    const lastRow = getLastValuedRow(sheet, Array.from({length: 20}, (_, i) => i + 1));
+                    const lastRow = getLastValuedRow(sheet, Array.from({ length: 20 }, (_, i) => i + 1));
                     const range = sheet.usedRange();
                     const lastCol = range ? range.endCell().columnNumber() : 1;
                     const rows = [];

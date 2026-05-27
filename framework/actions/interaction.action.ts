@@ -35,10 +35,11 @@ export class InteractionAction {
     public static async input(control: any, data: string, targetId: string): Promise<string> {
         const isDataEmpty = data === undefined || data === null || data === '';
         if (isDataEmpty) {
-            const visible = await control.isVisible();
-            if (!visible) {
-                console.warn(`[Warning] Element '${targetId}' is hidden and the input data is empty. Skipping interaction.`);
-                return `Skipped input: '${data}' into hidden ${targetId}`;
+            const locator = control.getInteractableLocator();
+            const editable = await locator.isEditable().catch(() => false);
+            if (!editable) {
+                console.warn(`[Warning] Element '${targetId}' is not editable/visible and the input data is empty. Skipping interaction.`);
+                return `Skipped input: '${data}' into non-interactable ${targetId}`;
             }
         }
         await control.waitForVisible();
@@ -51,6 +52,7 @@ export class InteractionAction {
         }
         return `Input: '${data}' into ${targetId}`;
     }
+
 
     public static async clear(control: BaseControl, targetId: string): Promise<string> {
         await control.waitForVisible();

@@ -24,6 +24,7 @@ export class KeywordRunner {
         const browserManager = new BrowserManager();
         const isHeadless = process.env.HEADLESS === 'true';
         let page = await browserManager.start(isHeadless);
+        let sessionPreconditionRun = false;
 
         try {
             for (const tc of testCases) {
@@ -65,6 +66,11 @@ export class KeywordRunner {
                     }
                 }
 
+                // If not parameterized, run only once with the first data iteration row
+                if (!tc.parameterized && iterations.length > 0) {
+                    iterations = [iterations[0]];
+                }
+
                 if (iterations.length === 0) {
                     console.log(`Skipping test case ${tcId} (No active iterations found in dataset '${datasetName}')`);
                     continue;
@@ -85,13 +91,17 @@ export class KeywordRunner {
                     console.log(`--- Running ${currentTcId}: ${tc.summary} (Parameterized: ${isParameterized ? 'Yes' : 'No'}) ---`);
 
                     // Reset browser context for independent test cases or when parameterized is true to isolate session state
-                    const shouldReset = !hasPrecondition || isParameterized;
+                    const isPreconditionCase = String(tcId).toUpperCase().includes("PRE");
+                    const shouldReset = (!hasPrecondition || isParameterized) && !sessionPreconditionRun;
                     if (shouldReset) {
                         const resetReason = !hasPrecondition 
                             ? "independent/negative test case" 
                             : "parameterized loop from step 1";
                         console.log(`  [Session] Resetting browser context for ${resetReason}.`);
                         page = await browserManager.resetContext(isHeadless);
+                    }
+                    if (isPreconditionCase) {
+                        sessionPreconditionRun = true;
                     }
 
                     try {
@@ -114,13 +124,22 @@ export class KeywordRunner {
 
                         // Take screenshot
                         try {
-                            // Wait for page to settle (network idle) before taking screenshot
-                            await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {
-                                console.log("    [Warning] Network is still busy after 15s, proceeding with screenshot...");
-                            });
+                            let lastAction = "";
+                            if (tcResult.steps && tcResult.steps.length > 0) {
+                                lastAction = String(tcResult.steps[tcResult.steps.length - 1].action || "").toLowerCase().trim();
+                            }
 
-                            // Buffer for fade-out animations to finish
-                            await page.waitForTimeout(1000);
+                            if (lastAction === 'check_status') {
+                                console.log("    [Screenshot] Last action is check_status, waiting 500ms buffer...");
+                                await page.waitForTimeout(500);
+                            } else {
+                                // Wait for page to settle (network idle) before taking screenshot
+                                await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {
+                                    console.log("    [Warning] Network is still busy after 5s, proceeding with screenshot...");
+                                });
+                                // Buffer for fade-out animations to finish
+                                await page.waitForTimeout(1000);
+                            }
 
                             const screenshotFile = `${currentTcId}.png`;
                             const screenshotPath = path.join(screenshotsDir, screenshotFile);
